@@ -8,7 +8,7 @@
  * sourced from popular open-source projects and best practices.
  */
 
-const { Pool } = require('pg')
+const { Pool } = require('../apps/api/node_modules/pg')
 
 const DATABASE_URL = process.env.DATABASE_URL
 if (!DATABASE_URL) {
@@ -296,7 +296,7 @@ async function seed() {
 - 推荐方案需包含：架构图文字描述、核心模块接口定义、数据库表结构建议、部署拓扑说明
 - 所有建议需考虑可扩展性和可维护性，避免过度设计`
 
-    const architectMcp = JSON.stringify({ mcpServers: { 'github-mcp': { command: 'npx', args: ['-y', '@modelcontextprotocol/server-github'], env: { GITHUB_PERSONAL_ACCESS_TOKEN: 'YOUR_TOKEN' } }, sqlite: { command: 'uvx', args: ['mcp-server-sqlite', '--db-path', '/tmp/arch.db'] } })
+    const architectMcp = JSON.stringify({ mcpServers: { 'github-mcp': { command: 'npx', args: ['-y', '@modelcontextprotocol/server-github'], env: { GITHUB_PERSONAL_ACCESS_TOKEN: 'YOUR_TOKEN' } }, sqlite: { command: 'uvx', args: ['mcp-server-sqlite', '--db-path', '/tmp/arch.db'] } } })
 
     const meetingPrompt = `你是一位专业的行政助理，专注于提升会议效率。你的任务是将混乱的会议信息整理成清晰的、可执行的结构。
 
