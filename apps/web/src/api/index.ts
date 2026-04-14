@@ -66,3 +66,10 @@ export const authApi = {
   register: (email: string, password: string, username: string, displayName?: string) =>
     apiClient.post('/auth/register', { email, password, username, displayName }),
 }
+
+export const adminApi = {
+  stats: () => apiClient.get('/admin/stats'),
+  recalculateRankings: () => apiClient.post('/admin/rankings/recalculate'),
+  featureAgent: (id: string, featured: boolean) =>
+    apiClient.post(`/admin/agents/${id}/feature`, { featured }),
+}

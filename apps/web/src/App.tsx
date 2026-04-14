@@ -10,6 +10,8 @@ import { UserProfilePage } from './pages/UserProfile'
 import { LoginPage } from './pages/Login'
 import { RegisterPage } from './pages/Register'
 import { TryAgentPage } from './pages/TryAgent'
+import { PublicProfilePage } from './pages/PublicProfile'
+import { AdminPage } from './pages/Admin'
 import { NotFoundPage } from './pages/NotFound'
 import { useUIStore } from './store/uiStore'
 
@@ -28,6 +30,8 @@ export default function App() {
           <Route path="/edit/:slug" element={<AgentUploadPage />} />
           <Route path="/profile" element={<UserProfilePage />} />
           <Route path="/try/:slug" element={<TryAgentPage />} />
+          <Route path="/users/:username" element={<PublicProfilePage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="*" element={<NotFoundPage />} />

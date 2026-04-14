@@ -171,6 +171,22 @@
     "memory": "长期记忆",
     "multi_agent": "多智能体"
   },
+  "admin": {
+    "actions": "管理操作",
+    "published": "已发布",
+    "drafts": "草稿",
+    "users": "用户数",
+    "hires": "总使用",
+    "hires_today": "今日使用",
+    "reviews": "总评价",
+    "points_awarded": "总积分发放",
+    "recalculate_rankings": "重新计算排名",
+    "recalculate_success": "排名重新计算完成",
+    "feature_management": "精选推荐管理",
+    "search_agent": "搜索智能体名称...",
+    "feature": "设为精选",
+    "unfeature": "取消精选"
+  },
   "common": {
     "loading": "加载中...",
     "error": "出错了",
@@ -182,6 +198,7 @@
     "edit": "编辑",
     "close": "关闭",
     "back": "返回",
+    "search": "搜索",
     "lang_zh": "中文",
     "lang_en": "English",
     "not_found": "页面不存在",

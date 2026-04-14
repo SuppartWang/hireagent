@@ -171,6 +171,22 @@
     "memory": "Memory",
     "multi_agent": "Multi-Agent"
   },
+  "admin": {
+    "actions": "Admin Actions",
+    "published": "Published",
+    "drafts": "Drafts",
+    "users": "Users",
+    "hires": "Total Hires",
+    "hires_today": "Hires Today",
+    "reviews": "Reviews",
+    "points_awarded": "Points Awarded",
+    "recalculate_rankings": "Recalculate Rankings",
+    "recalculate_success": "Rankings recalculated successfully",
+    "feature_management": "Featured Management",
+    "search_agent": "Search agent name...",
+    "feature": "Feature",
+    "unfeature": "Unfeature"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong",
@@ -182,6 +198,7 @@
     "edit": "Edit",
     "close": "Close",
     "back": "Back",
+    "search": "Search",
     "lang_zh": "中文",
     "lang_en": "English",
     "not_found": "Page Not Found",
