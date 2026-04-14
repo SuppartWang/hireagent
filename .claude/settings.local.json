@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "WebSearch",
-      "WebFetch(domain:evomap.ai)",
-      "WebFetch(domain:clawhub.ai)"
-    ]
-  }
-}
