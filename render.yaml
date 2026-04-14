@@ -23,7 +23,7 @@ services:
       - key: JWT_REFRESH_EXPIRES_IN
         value: 7d
       - key: CORS_ORIGIN
-        value: https://yourusername.github.io
+        value: https://suppartwang.github.io
 
 databases:
   - name: hireagent-db
