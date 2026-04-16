@@ -103,7 +103,7 @@ export function TryAgentPage() {
       </div>
 
       {/* Info card */}
-      <div className="relative z-10 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 mb-4 flex items-center gap-3 backdrop-blur-sm">
+      <div className="relative z-10 rounded-2xl border border-white/[0.10] bg-white/[0.06] p-4 mb-4 flex items-center gap-3 backdrop-blur-sm">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-lg font-semibold text-white overflow-hidden">
           {agent.avatarUrl ? (
             <img src={agent.avatarUrl} alt={name} className="w-full h-full object-cover" />
@@ -139,7 +139,7 @@ export function TryAgentPage() {
                 'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap',
                 msg.role === 'user'
                   ? 'bg-gradient-to-r from-brand-primary to-blue-500 text-white rounded-br-md shadow-lg shadow-brand-primary/10'
-                  : 'bg-white/[0.04] text-slate-200 rounded-bl-md border border-white/[0.08]'
+                  : 'bg-white/[0.08] text-slate-200 rounded-bl-md border border-white/[0.12]'
               )}
             >
               {msg.content}
@@ -156,7 +156,7 @@ export function TryAgentPage() {
             <div className="w-8 h-8 rounded-lg bg-brand-primary/20 flex items-center justify-center flex-shrink-0">
               <Bot className="w-4 h-4 text-brand-accent" />
             </div>
-            <div className="bg-white/[0.04] text-slate-200 rounded-2xl rounded-bl-md border border-white/[0.08] px-4 py-2.5 text-sm flex items-center gap-1">
+            <div className="bg-white/[0.08] text-slate-200 rounded-2xl rounded-bl-md border border-white/[0.12] px-4 py-2.5 text-sm flex items-center gap-1">
               <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" />
               <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.1s]" />
               <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]" />
@@ -184,7 +184,7 @@ export function TryAgentPage() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           placeholder={t('agent.try_input_placeholder')}
-          className="flex-1 rounded-full border border-white/10 bg-white/[0.03] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
+          className="flex-1 rounded-full border border-white/10 bg-white/[0.06] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
         />
         <Button
           onClick={handleSend}

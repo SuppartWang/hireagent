@@ -64,31 +64,32 @@ export function AgentCard({ agent, compact = false }: AgentCardProps) {
   return (
     <div
       className={cn(
-        'group relative flex flex-col rounded-2xl border border-white/[0.06] bg-white/[0.03]',
+        'group relative flex flex-col rounded-2xl border border-white/[0.10] bg-white/[0.06]',
         'backdrop-blur-md overflow-hidden transition-all duration-300',
-        'hover:border-white/[0.14] hover:bg-white/[0.06] hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-primary/10'
+        'hover:border-white/[0.20] hover:bg-white/[0.10] hover:-translate-y-1'
       )}
+      style={{ boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.04), 0 1px 2px 0 rgba(0,0,0,0.2)' }}
     >
       {/* Shine sweep on hover */}
       <div
         className="absolute -inset-[200%] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-700"
         style={{
           background:
-            'linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.03) 50%, transparent 60%)',
+            'linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.04) 50%, transparent 60%)',
           transform: 'translateX(-30%)',
         }}
       />
 
       {/* Header image / gradient placeholder */}
-      <div className="relative h-36 bg-gradient-to-br from-slate-800/60 to-slate-900/80 overflow-hidden">
+      <div className="relative h-36 bg-gradient-to-br from-slate-700/40 to-slate-900/80 overflow-hidden">
         {agent.avatarUrl ? (
           <img src={agent.avatarUrl} alt={name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center opacity-20">
+          <div className="absolute inset-0 flex items-center justify-center opacity-25">
             <CategoryIcon className="w-16 h-16 text-white" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1a]/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#080c14]/90 via-[#080c14]/30 to-transparent" />
 
         {agent.isFeatured && (
           <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border border-yellow-400/40 bg-yellow-500/15 text-yellow-300 shadow-[0_0_10px_rgba(250,204,21,0.25)]">
@@ -99,11 +100,11 @@ export function AgentCard({ agent, compact = false }: AgentCardProps) {
 
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-primary/30 to-brand-secondary/20 border border-white/10 flex items-center justify-center text-white font-semibold text-sm shadow-lg">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-primary/40 to-brand-secondary/30 border border-white/15 flex items-center justify-center text-white font-semibold text-sm shadow-lg">
               {getInitials(name)}
             </div>
             <div>
-              <h3 className="font-semibold text-white text-sm leading-tight line-clamp-1">{name}</h3>
+              <h3 className="font-semibold text-white text-sm leading-tight line-clamp-1 drop-shadow-sm">{name}</h3>
               <span className="text-[11px] text-slate-400">{agent.creatorDisplayName || agent.creatorUsername || '官方'}</span>
             </div>
           </div>
@@ -128,14 +129,14 @@ export function AgentCard({ agent, compact = false }: AgentCardProps) {
           </div>
         </div>
 
-        <p className={cn('text-sm text-slate-400 leading-relaxed', compact ? 'line-clamp-2' : 'line-clamp-3')}>
+        <p className={cn('text-sm text-slate-300 leading-relaxed', compact ? 'line-clamp-2' : 'line-clamp-3')}>
           {getTagline(agent) || '暂无描述'}
         </p>
 
         <div className="mt-auto pt-3 flex items-center gap-2">
           <Button
             size="sm"
-            className="flex-1 rounded-full text-sm font-medium bg-gradient-to-r from-brand-primary to-blue-500 text-white hover:from-blue-500 hover:to-brand-primary shadow-lg shadow-brand-primary/20 transition-all duration-200"
+            className="flex-1 rounded-full text-sm font-medium bg-gradient-to-r from-brand-primary to-blue-500 text-white hover:from-blue-500 hover:to-brand-primary shadow-lg shadow-brand-primary/25 transition-all duration-200"
             asChild
           >
             <Link to={`/marketplace/${agent.slug}`}>查看详情</Link>
@@ -143,7 +144,7 @@ export function AgentCard({ agent, compact = false }: AgentCardProps) {
           <Button
             size="icon"
             variant="outline"
-            className="rounded-full border-white/10 hover:bg-white/[0.06] hover:border-white/20 transition-all"
+            className="rounded-full border-white/10 bg-white/[0.04] hover:bg-white/[0.10] hover:border-white/20 transition-all"
             onClick={() => openExportModal(agent.id, name)}
           >
             <Share2 className="w-4 h-4 text-slate-300" />
@@ -151,7 +152,7 @@ export function AgentCard({ agent, compact = false }: AgentCardProps) {
           <Button
             size="icon"
             variant="outline"
-            className="rounded-full border-white/10 hover:bg-white/[0.06] hover:border-white/20 transition-all"
+            className="rounded-full border-white/10 bg-white/[0.04] hover:bg-white/[0.10] hover:border-white/20 transition-all"
           >
             <Heart className="w-4 h-4 text-slate-300" />
           </Button>

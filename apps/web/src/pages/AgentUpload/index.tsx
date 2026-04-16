@@ -192,7 +192,7 @@ export function AgentUploadPage() {
                     ? 'bg-green-500/20 border-green-500/40 text-green-400'
                     : step === i + 1
                     ? 'bg-brand-primary/20 border-brand-primary/40 text-brand-accent'
-                    : 'bg-white/[0.04] border-white/10 text-slate-500'
+                    : 'bg-white/[0.08] border-white/10 text-slate-500'
                 )}
               >
                 {step > i + 1 ? '✓' : i + 1}
@@ -211,14 +211,14 @@ export function AgentUploadPage() {
           </div>
         )}
 
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm p-6 space-y-5">
+        <div className="rounded-2xl border border-white/[0.10] bg-white/[0.06] backdrop-blur-sm p-6 space-y-5">
           {/* Step 1: Basic Info */}
           {step === 1 && (
             <>
               <div>
                 <label className="block text-sm text-slate-300 mb-1.5">{t('upload.name_zh')} *</label>
                 <input
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
                   value={form.nameZh}
                   onChange={(e) => set('nameZh', e.target.value)}
                   required
@@ -227,7 +227,7 @@ export function AgentUploadPage() {
               <div>
                 <label className="block text-sm text-slate-300 mb-1.5">{t('upload.name_en')}</label>
                 <input
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
                   value={form.nameEn}
                   onChange={(e) => set('nameEn', e.target.value)}
                 />
@@ -235,7 +235,7 @@ export function AgentUploadPage() {
               <div>
                 <label className="block text-sm text-slate-300 mb-1.5">{t('upload.tagline_zh')}</label>
                 <input
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
                   value={form.taglineZh}
                   onChange={(e) => set('taglineZh', e.target.value)}
                 />
@@ -243,7 +243,7 @@ export function AgentUploadPage() {
               <div>
                 <label className="block text-sm text-slate-300 mb-1.5">{t('upload.description_zh')} *</label>
                 <textarea
-                  className="w-full h-24 resize-none rounded-xl border border-white/10 bg-white/[0.03] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
+                  className="w-full h-24 resize-none rounded-xl border border-white/10 bg-white/[0.06] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
                   value={form.descriptionZh}
                   onChange={(e) => set('descriptionZh', e.target.value)}
                   required
@@ -252,7 +252,7 @@ export function AgentUploadPage() {
               <div>
                 <label className="block text-sm text-slate-300 mb-1.5">{t('upload.category')}</label>
                 <select
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] text-white px-4 py-2.5 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] text-white px-4 py-2.5 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
                   value={form.category}
                   onChange={(e) => set('category', e.target.value as AgentCategory)}
                 >
@@ -266,7 +266,7 @@ export function AgentUploadPage() {
               <div>
                 <label className="block text-sm text-slate-300 mb-1.5">{t('upload.avatar_url')}</label>
                 <input
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
                   type="url"
                   value={form.avatarUrl}
                   onChange={(e) => set('avatarUrl', e.target.value)}
@@ -281,7 +281,7 @@ export function AgentUploadPage() {
               <div>
                 <label className="block text-sm text-slate-300 mb-1.5">{t('agent.system_prompt')} *</label>
                 <textarea
-                  className="w-full h-64 resize-none rounded-xl border border-white/10 bg-white/[0.03] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all font-mono text-sm"
+                  className="w-full h-64 resize-none rounded-xl border border-white/10 bg-white/[0.06] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all font-mono text-sm"
                   value={form.systemPrompt}
                   onChange={(e) => set('systemPrompt', e.target.value)}
                   placeholder={t('upload.system_prompt_placeholder')}
@@ -290,7 +290,7 @@ export function AgentUploadPage() {
               <div>
                 <label className="block text-sm text-slate-300 mb-1.5">{t('upload.prompt_language')}</label>
                 <select
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] text-white px-4 py-2.5 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] text-white px-4 py-2.5 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
                   value={form.systemPromptLang}
                   onChange={(e) => set('systemPromptLang', e.target.value)}
                 >
@@ -307,7 +307,7 @@ export function AgentUploadPage() {
               <label className="block text-sm text-slate-300 mb-1.5">{t('upload.mcp_config_label')}</label>
               <textarea
                 className={cn(
-                  'w-full h-48 resize-none rounded-xl border bg-white/[0.03] text-white px-4 py-2.5 placeholder:text-slate-600 focus:ring-1 outline-none transition-all font-mono text-sm',
+                  'w-full h-48 resize-none rounded-xl border bg-white/[0.06] text-white px-4 py-2.5 placeholder:text-slate-600 focus:ring-1 outline-none transition-all font-mono text-sm',
                   !form.mcpConfigValid
                     ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20'
                     : 'border-white/10 focus:border-brand-accent/50 focus:ring-brand-accent/20'
@@ -336,7 +336,7 @@ export function AgentUploadPage() {
                         'px-3 py-1.5 rounded-full text-xs font-medium transition-all border',
                         form.capabilities.includes(cap)
                           ? 'bg-brand-secondary/20 border-brand-secondary/40 text-white'
-                          : 'bg-white/[0.04] border-white/10 text-slate-400 hover:text-white hover:bg-white/[0.08]'
+                          : 'bg-white/[0.08] border-white/10 text-slate-400 hover:text-white hover:bg-white/[0.08]'
                       )}
                     >
                       {lang === 'zh-CN' ? CAPABILITY_LABELS[cap].zh : CAPABILITY_LABELS[cap].en}
@@ -347,7 +347,7 @@ export function AgentUploadPage() {
               <div>
                 <label className="block text-sm text-slate-300 mb-1.5">{t('upload.tags_label')}</label>
                 <input
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
                   value={form.tags}
                   onChange={(e) => set('tags', e.target.value)}
                   placeholder="Python, 数据分析, 可视化"
@@ -356,7 +356,7 @@ export function AgentUploadPage() {
               <div>
                 <label className="block text-sm text-slate-300 mb-1.5">{t('upload.supported_models_label')}</label>
                 <input
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] text-white px-4 py-2.5 placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none transition-all"
                   value={form.supportedModels}
                   onChange={(e) => set('supportedModels', e.target.value)}
                 />
@@ -375,7 +375,7 @@ export function AgentUploadPage() {
                             e.target.checked ? [...form.languageSupport, l] : form.languageSupport.filter((x) => x !== l)
                           )
                         }
-                        className="rounded border-white/20 bg-white/[0.04] text-brand-accent focus:ring-brand-accent/30"
+                        className="rounded border-white/20 bg-white/[0.08] text-brand-accent focus:ring-brand-accent/30"
                       />
                       <span className="text-sm text-slate-300">{l === 'zh-CN' ? '中文' : 'English'}</span>
                     </label>
@@ -392,7 +392,7 @@ export function AgentUploadPage() {
                 <Eye className="w-4 h-4" />
                 {t('upload.preview')}
               </h3>
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
+              <div className="rounded-xl border border-white/[0.10] bg-white/[0.05] p-4 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-xl font-semibold text-white">
                     {form.avatarUrl ? (
@@ -428,7 +428,7 @@ export function AgentUploadPage() {
           <button
             onClick={() => setStep((s) => (s - 1) as Step)}
             disabled={step === 1}
-            className="inline-flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium text-slate-300 hover:text-white hover:bg-white/[0.04] transition-all disabled:opacity-0"
+            className="inline-flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium text-slate-300 hover:text-white hover:bg-white/[0.08] transition-all disabled:opacity-0"
           >
             <ChevronLeft className="w-4 h-4" />
             {t('upload.prev')}
@@ -439,7 +439,7 @@ export function AgentUploadPage() {
                 <button
                   onClick={() => save(false)}
                   disabled={saving}
-                  className="px-5 py-2.5 rounded-full text-sm font-medium bg-white/[0.04] hover:bg-white/[0.08] text-white border border-white/10 transition-all"
+                  className="px-5 py-2.5 rounded-full text-sm font-medium bg-white/[0.08] hover:bg-white/[0.08] text-white border border-white/10 transition-all"
                 >
                   {t('upload.save_draft')}
                 </button>

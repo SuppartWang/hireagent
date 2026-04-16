@@ -16,25 +16,27 @@ export function HomePage() {
       {/* Animated grid background */}
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="absolute inset-0 opacity-[0.015]"
+          className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `
-              linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px)
+              linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)
             `,
             backgroundSize: '60px 60px',
           }}
         />
         {/* Aurora gradient orbs */}
-        <div className="absolute top-[-10%] left-1/4 w-[600px] h-[600px] bg-brand-primary/20 rounded-full blur-[120px] animate-float" />
-        <div className="absolute top-[10%] right-1/4 w-[500px] h-[500px] bg-brand-secondary/15 rounded-full blur-[100px] animate-float animation-delay-2000" />
-        <div className="absolute bottom-[10%] left-1/3 w-[400px] h-[400px] bg-brand-accent/10 rounded-full blur-[90px] animate-float animation-delay-4000" />
+        <div className="absolute top-[-10%] left-1/4 w-[600px] h-[600px] bg-brand-primary/18 rounded-full blur-[120px] animate-float" />
+        <div className="absolute top-[10%] right-1/4 w-[500px] h-[500px] bg-brand-secondary/12 rounded-full blur-[100px] animate-float animation-delay-2000" />
+        <div className="absolute bottom-[10%] left-1/3 w-[400px] h-[400px] bg-brand-accent/8 rounded-full blur-[90px] animate-float animation-delay-4000" />
+        {/* Bottom fade to separate hero from content */}
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
       </div>
 
       {/* Hero */}
-      <section className="relative pt-24 pb-16 px-4">
+      <section className="relative pt-24 pb-12 px-4">
         <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-slate-400 mb-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.10] text-xs text-slate-400 mb-8 animate-fade-in shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
             {t('home.hero_subtitle').split('，')[0]}
           </div>
@@ -65,26 +67,35 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Stats */}
+      {/* Stats Bento */}
       {stats && (
         <section className="pb-12 px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
-                { value: stats.totalAgents, label: t('home.stats_agents'), icon: Bot },
-                { value: stats.totalUsers, label: t('home.stats_users'), icon: Star },
-                { value: stats.totalHires, label: t('home.stats_hires'), icon: Download },
-              ].map(({ value, label, icon: Icon }, idx) => (
+                { value: stats.totalAgents, label: t('home.stats_agents'), icon: Bot, accent: 'from-brand-primary/20 to-blue-500/10' },
+                { value: stats.totalUsers, label: t('home.stats_users'), icon: Star, accent: 'from-brand-secondary/20 to-purple-500/10' },
+                { value: stats.totalHires, label: t('home.stats_hires'), icon: Download, accent: 'from-brand-accent/15 to-cyan-500/10' },
+              ].map(({ value, label, icon: Icon, accent }, idx) => (
                 <div
                   key={label}
-                  className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm p-5 text-center
-                             transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.04] hover:-translate-y-0.5 animate-fade-in"
-                  style={{ animationDelay: `${300 + idx * 100}ms` }}
+                  className="relative overflow-hidden rounded-2xl border border-white/[0.10] bg-white/[0.06] backdrop-blur-md p-5 text-left sm:text-center
+                             transition-all duration-300 hover:border-white/[0.20] hover:bg-white/[0.10] hover:-translate-y-0.5 animate-fade-in"
+                  style={{
+                    animationDelay: `${300 + idx * 100}ms`,
+                    boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.04), 0 1px 2px 0 rgba(0,0,0,0.2)',
+                  }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500" />
-                  <Icon className="w-5 h-5 mx-auto mb-2 text-brand-accent relative z-10" />
-                  <div className="text-3xl font-bold glow-number relative z-10 tabular-nums">{value?.toLocaleString()}</div>
-                  <div className="text-sm text-slate-500 relative z-10 mt-1">{label}</div>
+                  <div className={`absolute -top-6 -right-6 w-24 h-24 rounded-full bg-gradient-to-br ${accent} blur-2xl opacity-60`} />
+                  <div className="relative z-10 flex items-center gap-4 sm:flex-col sm:gap-2">
+                    <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/[0.10] flex items-center justify-center shadow-sm">
+                      <Icon className="w-5 h-5 text-brand-accent" />
+                    </div>
+                    <div>
+                      <div className="text-2xl sm:text-3xl font-bold glow-number tabular-nums">{value?.toLocaleString()}</div>
+                      <div className="text-sm text-slate-500 mt-0.5">{label}</div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -108,10 +119,13 @@ export function HomePage() {
         <section className="py-10 px-4 relative z-10 animate-fade-in" style={{ animationDelay: '500ms' }}>
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                {t('home.featured')}
-              </h2>
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-5 rounded-full bg-gradient-to-b from-yellow-400 to-amber-600" />
+                <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  {t('home.featured')}
+                </h2>
+              </div>
               <Link to="/marketplace?sort=ranking" className="group text-sm text-brand-accent hover:text-brand-accent/80 flex items-center gap-1 transition-colors">
                 {t('home.view_all')}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -142,10 +156,13 @@ export function HomePage() {
         <section className="py-10 px-4 relative z-10 animate-fade-in" style={{ animationDelay: '600ms' }}>
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-brand-accent" />
-                {t('home.trending')}
-              </h2>
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-5 rounded-full bg-gradient-to-b from-brand-accent to-blue-500" />
+                <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-brand-accent" />
+                  {t('home.trending')}
+                </h2>
+              </div>
               <Link to="/marketplace?sort=trending" className="group text-sm text-brand-accent hover:text-brand-accent/80 flex items-center gap-1 transition-colors">
                 {t('home.view_all')}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

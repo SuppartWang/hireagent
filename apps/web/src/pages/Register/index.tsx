@@ -60,7 +60,7 @@ export function RegisterPage() {
       <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-brand-primary/10 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-md">
-        <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl p-8 shadow-2xl shadow-black/40">
+        <div className="rounded-3xl border border-white/[0.10] bg-white/[0.06] backdrop-blur-xl p-8 shadow-2xl shadow-black/40">
           <div className="text-center mb-8">
             <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-brand-secondary to-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-secondary/20 ring-1 ring-white/10">
               <Bot className="w-6 h-6 text-white" />
@@ -76,7 +76,7 @@ export function RegisterPage() {
                 id="username"
                 autoComplete="username"
                 placeholder="your_name"
-                className="rounded-xl border-white/10 bg-white/[0.03] text-white placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-brand-accent/20"
+                className="rounded-xl border-white/10 bg-white/[0.05] text-white placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-brand-accent/20"
                 {...register('username')}
               />
               {errors.username && <p className="text-xs text-red-400">{errors.username.message}</p>}
@@ -89,7 +89,7 @@ export function RegisterPage() {
                 type="email"
                 autoComplete="email"
                 placeholder="you@example.com"
-                className="rounded-xl border-white/10 bg-white/[0.03] text-white placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-brand-accent/20"
+                className="rounded-xl border-white/10 bg-white/[0.05] text-white placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-brand-accent/20"
                 {...register('email')}
               />
               {errors.email && <p className="text-xs text-red-400">{errors.email.message}</p>}
@@ -103,7 +103,7 @@ export function RegisterPage() {
                   type={showPwd ? 'text' : 'password'}
                   autoComplete="new-password"
                   placeholder="••••••••"
-                  className="rounded-xl border-white/10 bg-white/[0.03] text-white placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-brand-accent/20 pr-10"
+                  className="rounded-xl border-white/10 bg-white/[0.05] text-white placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-brand-accent/20 pr-10"
                   {...register('password')}
                 />
                 <button
@@ -124,7 +124,7 @@ export function RegisterPage() {
                 type={showPwd ? 'text' : 'password'}
                 autoComplete="new-password"
                 placeholder="••••••••"
-                className="rounded-xl border-white/10 bg-white/[0.03] text-white placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-brand-accent/20"
+                className="rounded-xl border-white/10 bg-white/[0.05] text-white placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-brand-accent/20"
                 {...register('confirmPassword')}
               />
               {errors.confirmPassword && <p className="text-xs text-red-400">{errors.confirmPassword.message}</p>}

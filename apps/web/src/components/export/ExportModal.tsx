@@ -88,21 +88,21 @@ export function ExportModal({ agentId, agentName, onClose }: ExportModalProps) {
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg rounded-3xl border border-white/[0.08] bg-[#0b1120]/95 backdrop-blur-xl shadow-2xl animate-slide-up overflow-hidden"
+        className="relative w-full max-w-lg rounded-3xl border border-white/[0.12] bg-[#0b1120]/95 backdrop-blur-xl shadow-2xl animate-slide-up overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="absolute top-0 right-0 w-40 h-40 bg-brand-primary/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Header */}
-        <div className="relative z-10 flex items-center justify-between p-5 border-b border-white/[0.06]">
+        <div className="relative z-10 flex items-center justify-between p-5 border-b border-white/[0.10]">
           <h2 className="font-semibold text-white">{t('export.title')}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors p-1 rounded-full hover:bg-white/[0.04]">
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors p-1 rounded-full hover:bg-white/[0.08]">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="relative z-10 flex border-b border-white/[0.06] px-5 overflow-x-auto">
+        <div className="relative z-10 flex border-b border-white/[0.10] px-5 overflow-x-auto">
           {tabs.map(({ key, label }) => (
             <button
               key={key}
@@ -124,7 +124,7 @@ export function ExportModal({ agentId, agentName, onClose }: ExportModalProps) {
           {tab === 'claude' && (
             <div>
               <p className="text-sm text-slate-400 mb-3">{t('export.claude_desc')}</p>
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3 text-xs font-mono text-slate-300 mb-3">
+              <div className="rounded-xl border border-white/[0.10] bg-white/[0.06] p-3 text-xs font-mono text-slate-300 mb-3">
                 {`{\n  "mcpServers": { ... }\n}`}
               </div>
               <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/10 p-3 mb-4">
@@ -136,7 +136,7 @@ export function ExportModal({ agentId, agentName, onClose }: ExportModalProps) {
           {tab === 'openclaw' && (
             <div>
               <p className="text-sm text-slate-400 mb-4">{t('export.openclaw_desc')}</p>
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3 text-xs font-mono text-slate-300 mb-3">
+              <div className="rounded-xl border border-white/[0.10] bg-white/[0.06] p-3 text-xs font-mono text-slate-300 mb-3">
                 {`{\n  "openclaw_json": { ... },\n  "agent_md": "..."\n}`}
               </div>
             </div>

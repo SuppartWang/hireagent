@@ -48,7 +48,7 @@ export function AgentDetailPage() {
   if (!agent) {
     return (
       <div className="px-4 py-16 text-center max-w-xl mx-auto">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/[0.04] flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/[0.08] flex items-center justify-center">
           <Bot className="w-8 h-8 text-slate-500" />
         </div>
         <h2 className="text-xl font-semibold text-white mb-2">{t('agent.not_found')}</h2>
@@ -86,7 +86,7 @@ export function AgentDetailPage() {
         </button>
 
         {/* Header card */}
-        <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md p-6 md:p-8 mb-6 relative overflow-hidden">
+        <div className="rounded-3xl border border-white/[0.10] bg-white/[0.06] backdrop-blur-md p-6 md:p-8 mb-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-primary/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
           <div className="flex flex-col md:flex-row gap-6 md:items-start">
@@ -138,11 +138,11 @@ export function AgentDetailPage() {
               >
                 {hireMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t('agent.try_now')}
               </Button>
-              <Button variant="outline" className="rounded-full border-white/10 hover:bg-white/[0.06]" onClick={() => openExportModal(agent.id, name)}>
+              <Button variant="outline" className="rounded-full border-white/10 bg-white/[0.04] hover:bg-white/[0.10]" onClick={() => openExportModal(agent.id, name)}>
                 <Share2 className="w-4 h-4 mr-2" />
                 {t('agent.share')}
               </Button>
-              <Button variant="outline" className="rounded-full border-white/10 hover:bg-white/[0.06]">
+              <Button variant="outline" className="rounded-full border-white/10 bg-white/[0.04] hover:bg-white/[0.10]">
                 <Heart className="w-4 h-4 mr-2" />
                 {t('agent.favorite')}
               </Button>
@@ -154,12 +154,12 @@ export function AgentDetailPage() {
           {/* Main content */}
           <div className="lg:col-span-2 space-y-6">
             {agent.coverUrl && (
-              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+              <div className="rounded-2xl border border-white/[0.10] bg-white/[0.05] overflow-hidden">
                 <img src={agent.coverUrl} alt={name} className="w-full object-cover" />
               </div>
             )}
 
-            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-sm">
+            <div className="rounded-2xl border border-white/[0.10] bg-white/[0.06] p-6 backdrop-blur-sm">
               <h3 className="text-lg font-semibold text-white mb-4">{t('agent.overview')}</h3>
               <div className="prose prose-invert max-w-none text-slate-400 leading-relaxed">
                 {(description || '暂无描述').split('\n').map((p: string, idx: number) => (
@@ -169,7 +169,7 @@ export function AgentDetailPage() {
             </div>
 
             {agent.capabilities && agent.capabilities.length > 0 && (
-              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-sm">
+              <div className="rounded-2xl border border-white/[0.10] bg-white/[0.06] p-6 backdrop-blur-sm">
                 <h3 className="text-lg font-semibold text-white mb-4">{t('agent.features')}</h3>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {agent.capabilities.map((cap: string, idx: number) => (
@@ -189,7 +189,7 @@ export function AgentDetailPage() {
               <h4 className="text-sm font-semibold text-white mb-4">{t('agent.tags')}</h4>
               <div className="flex flex-wrap gap-2">
                 {(agent.tags || []).map((tag: string) => (
-                  <span key={tag} className="px-2.5 py-1 rounded-full text-xs border border-white/10 bg-white/[0.04] text-slate-300 hover:border-white/20 hover:text-white transition-colors cursor-default">
+                  <span key={tag} className="px-2.5 py-1 rounded-full text-xs border border-white/10 bg-white/[0.08] text-slate-300 hover:border-white/20 hover:text-white hover:bg-white/[0.10] transition-colors cursor-default">
                     #{tag}
                   </span>
                 ))}

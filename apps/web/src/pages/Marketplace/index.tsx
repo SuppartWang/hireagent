@@ -69,7 +69,7 @@ export function MarketplacePage() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder={t('marketplace.search_placeholder')}
-              className="pl-10 rounded-full border-white/10 bg-white/[0.03] text-white placeholder:text-slate-500 focus:border-brand-accent/50 focus:ring-brand-accent/20"
+              className="pl-10 rounded-full border-white/10 bg-white/[0.05] text-white placeholder:text-slate-500 focus:border-brand-accent/50 focus:ring-brand-accent/20"
             />
           </div>
 
@@ -81,7 +81,7 @@ export function MarketplacePage() {
                 className={cn(
                   'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all',
                   sort === opt.value
-                    ? 'text-white bg-white/[0.08] border border-white/10'
+                    ? 'text-white bg-white/[0.10] border border-white/15'
                     : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                 )}
               >
@@ -124,8 +124,8 @@ export function MarketplacePage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-24 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/[0.04] flex items-center justify-center">
+          <div className="text-center py-24 border border-dashed border-white/15 rounded-3xl bg-white/[0.05]">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/[0.08] flex items-center justify-center">
               <SlidersHorizontal className="w-7 h-7 text-slate-500" />
             </div>
             <h3 className="text-lg font-semibold text-white mb-1">{t('marketplace.no_results')}</h3>

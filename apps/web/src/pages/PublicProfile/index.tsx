@@ -53,7 +53,7 @@ export function PublicProfilePage() {
         </div>
 
         {/* Profile Header */}
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md p-6 mb-6">
+        <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-md p-6 mb-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center text-white text-3xl font-bold shadow-xl shadow-brand-primary/20 ring-1 ring-white/10">
               {profile.avatarUrl ? (
@@ -104,7 +104,7 @@ export function PublicProfilePage() {
           </div>
 
           {profile.agents.length === 0 ? (
-            <div className="text-center py-12 text-slate-500 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+            <div className="text-center py-12 text-slate-500 rounded-2xl border border-white/[0.10] bg-white/[0.05]">
               <p>{lang === 'zh-CN' ? '该用户尚未发布智能体' : 'No agents published yet'}</p>
             </div>
           ) : (
@@ -113,7 +113,7 @@ export function PublicProfilePage() {
                 <Link
                   key={a.id}
                   to={`/marketplace/${a.slug}`}
-                  className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 hover:border-white/[0.14] hover:bg-white/[0.05] transition-all group"
+                  className="rounded-2xl border border-white/[0.10] bg-white/[0.06] p-4 hover:border-white/[0.14] hover:bg-white/[0.05] transition-all group"
                 >
                   <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-xl flex-shrink-0 font-semibold text-white">

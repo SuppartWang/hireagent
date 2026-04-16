@@ -34,7 +34,7 @@ export function Navbar() {
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/')
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-white/[0.04]">
+    <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/[0.08]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -56,8 +56,8 @@ export function Navbar() {
                 className={cn(
                   'relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-1.5',
                   isActive(link.to)
-                    ? 'text-white bg-white/[0.06]'
-                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                    ? 'text-white bg-white/[0.10]'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'
                 )}
               >
                 {link.icon && <link.icon className="w-3.5 h-3.5" />}
@@ -73,21 +73,21 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-2">
             <button
               onClick={toggleLang}
-              className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors text-sm px-3 py-2 rounded-full hover:bg-white/[0.04]"
+              className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors text-sm px-3 py-2 rounded-full hover:bg-white/[0.08]"
             >
               <Globe className="w-4 h-4" />
               {lang === 'zh-CN' ? t('common.lang_en') : t('common.lang_zh')}
             </button>
 
             {user ? (
-              <div className="flex items-center gap-2 pl-2 border-l border-white/[0.06]">
+              <div className="flex items-center gap-2 pl-2 border-l border-white/[0.10]">
                 <Link
                   to="/profile"
                   className={cn(
                     'flex items-center gap-2 text-sm px-3 py-2 rounded-full transition-all duration-200',
                     isActive('/profile')
-                      ? 'text-white bg-white/[0.06]'
-                      : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                      ? 'text-white bg-white/[0.10]'
+                      : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'
                   )}
                 >
                   <User className="w-4 h-4" />
@@ -95,17 +95,17 @@ export function Navbar() {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-slate-500 hover:text-red-400 transition-colors p-2 rounded-full hover:bg-white/[0.04]"
+                  className="text-slate-500 hover:text-red-400 transition-colors p-2 rounded-full hover:bg-white/[0.08]"
                   title={t('nav.logout')}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 pl-2 border-l border-white/[0.06]">
+              <div className="flex items-center gap-2 pl-2 border-l border-white/[0.10]">
                 <Link
                   to="/login"
-                  className="px-4 py-2 rounded-full text-sm font-medium text-slate-300 hover:text-white hover:bg-white/[0.04] transition-all duration-200"
+                  className="px-4 py-2 rounded-full text-sm font-medium text-slate-300 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
                 >
                   {t('nav.login')}
                 </Link>
@@ -120,21 +120,21 @@ export function Navbar() {
           </div>
 
           {/* Mobile menu toggle */}
-          <button className="md:hidden text-slate-400 hover:text-white p-2 rounded-lg hover:bg-white/[0.04]" onClick={() => setMenuOpen(!menuOpen)}>
+          <button className="md:hidden text-slate-400 hover:text-white p-2 rounded-lg hover:bg-white/[0.08]" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden py-3 border-t border-white/[0.04] space-y-1">
+          <div className="md:hidden py-3 border-t border-white/[0.08] space-y-1">
             {navLinks.map((link: any) => (
               <Link
                 key={link.to}
                 to={link.to}
                 className={cn(
                   'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium',
-                  isActive(link.to) ? 'text-white bg-white/[0.06]' : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                  isActive(link.to) ? 'text-white bg-white/[0.10]' : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'
                 )}
                 onClick={() => setMenuOpen(false)}
               >
@@ -146,12 +146,12 @@ export function Navbar() {
               <>
                 <Link
                   to="/profile"
-                  className={cn('flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium', isActive('/profile') ? 'text-white bg-white/[0.06]' : 'text-slate-400 hover:text-white hover:bg-white/[0.04]')}
+                  className={cn('flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium', isActive('/profile') ? 'text-white bg-white/[0.10]' : 'text-slate-400 hover:text-white hover:bg-white/[0.08]')}
                   onClick={() => setMenuOpen(false)}
                 >
                   <User className="w-4 h-4" /> {t('nav.profile')}
                 </Link>
-                <button onClick={handleLogout} className="flex w-full items-center gap-2 px-3 py-2 text-red-400 rounded-lg hover:bg-white/[0.04]">
+                <button onClick={handleLogout} className="flex w-full items-center gap-2 px-3 py-2 text-red-400 rounded-lg hover:bg-white/[0.08]">
                   <LogOut className="w-4 h-4" /> {t('nav.logout')}
                 </button>
               </>

@@ -66,7 +66,7 @@ export function UserProfilePage() {
       <div className="absolute bottom-[-10%] right-1/4 w-[400px] h-[400px] bg-brand-secondary/8 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="max-w-4xl mx-auto relative z-10">
-        <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl overflow-hidden shadow-2xl shadow-black/40">
+        <div className="rounded-3xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl overflow-hidden shadow-2xl shadow-black/40">
           {/* Header */}
           <div className="relative h-36 bg-gradient-to-r from-brand-primary/30 to-brand-secondary/20">
             <div className="absolute -bottom-10 left-8">
@@ -96,7 +96,7 @@ export function UserProfilePage() {
             </div>
 
             <Tabs value={tab} onValueChange={setTab} className="w-full">
-              <TabsList className="bg-white/[0.04] border border-white/[0.06] rounded-full p-1 mb-6">
+              <TabsList className="bg-white/[0.08] border border-white/[0.10] rounded-full p-1 mb-6">
                 <TabsTrigger value="profile" className="rounded-full data-[state=active]:bg-white/10 data-[state=active]:text-white text-slate-400 px-4 py-1.5">
                   {t('profile.tab_profile')}
                 </TabsTrigger>
@@ -111,7 +111,7 @@ export function UserProfilePage() {
                     <Label htmlFor="displayName" className="text-slate-300">{t('profile.display_name')}</Label>
                     <Input
                       id="displayName"
-                      className="rounded-xl border-white/10 bg-white/[0.03] text-white focus:border-brand-accent/50 focus:ring-brand-accent/20"
+                      className="rounded-xl border-white/10 bg-white/[0.06] text-white focus:border-brand-accent/50 focus:ring-brand-accent/20"
                       {...register('displayName')}
                     />
                     {errors.displayName && <p className="text-xs text-red-400">{errors.displayName.message}</p>}
@@ -123,7 +123,7 @@ export function UserProfilePage() {
                       id="bio"
                       rows={4}
                       className={cn(
-                        'w-full rounded-xl border border-white/10 bg-white/[0.03] text-white p-3 text-sm',
+                        'w-full rounded-xl border border-white/10 bg-white/[0.06] text-white p-3 text-sm',
                         'placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 outline-none resize-none'
                       )}
                       {...register('bio')}
@@ -144,7 +144,7 @@ export function UserProfilePage() {
 
               <TabsContent value="security">
                 <div className="max-w-xl space-y-4">
-                  <div className="p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+                  <div className="p-4 rounded-2xl border border-white/[0.10] bg-white/[0.05]">
                     <h4 className="text-sm font-semibold text-white mb-1">{t('profile.password')}</h4>
                     <p className="text-xs text-slate-500 mb-3">{t('profile.password_desc')}</p>
                     <Button variant="outline" className="rounded-full border-white/10 hover:bg-white/[0.06]">
@@ -152,7 +152,7 @@ export function UserProfilePage() {
                     </Button>
                   </div>
 
-                  <div className="p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+                  <div className="p-4 rounded-2xl border border-white/[0.10] bg-white/[0.05]">
                     <h4 className="text-sm font-semibold text-white mb-1">{t('profile.two_factor')}</h4>
                     <p className="text-xs text-slate-500 mb-3">{t('profile.two_factor_desc')}</p>
                     <Button disabled variant="outline" className="rounded-full border-white/10">

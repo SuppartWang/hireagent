@@ -91,7 +91,7 @@ export function AdminPage() {
             {statCards.map(({ label, value, icon: Icon }) => (
               <div
                 key={label}
-                className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 text-center transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.05] hover:-translate-y-0.5"
+                className="rounded-2xl border border-white/[0.10] bg-white/[0.06] p-5 text-center transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.05] hover:-translate-y-0.5"
               >
                 <Icon className="w-5 h-5 mx-auto mb-2 text-brand-accent" />
                 <div className="text-2xl font-bold glow-number tabular-nums">{Number(value).toLocaleString()}</div>
@@ -102,7 +102,7 @@ export function AdminPage() {
         ) : null}
 
         {/* Actions */}
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-sm mb-6">
+        <div className="rounded-2xl border border-white/[0.10] bg-white/[0.06] p-6 backdrop-blur-sm mb-6">
           <h2 className="text-lg font-semibold text-white mb-4">{t('admin.actions')}</h2>
           <Button
             onClick={handleRecalculate}
@@ -115,7 +115,7 @@ export function AdminPage() {
         </div>
 
         {/* Feature Management */}
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-sm">
+        <div className="rounded-2xl border border-white/[0.10] bg-white/[0.06] p-6 backdrop-blur-sm">
           <h2 className="text-lg font-semibold text-white mb-4">{t('admin.feature_management')}</h2>
           <div className="flex gap-2 mb-4">
             <Input
@@ -123,7 +123,7 @@ export function AdminPage() {
               onChange={(e) => setSearchQ(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder={t('admin.search_agent')}
-              className="flex-1 rounded-full border-white/10 bg-white/[0.03] text-white placeholder:text-slate-500 focus:border-brand-accent/50"
+              className="flex-1 rounded-full border-white/10 bg-white/[0.06] text-white placeholder:text-slate-500 focus:border-brand-accent/50"
             />
             <Button onClick={handleSearch} disabled={searching} className="rounded-full bg-gradient-to-r from-brand-primary to-blue-500 text-white hover:from-blue-500 hover:to-brand-primary shadow-lg shadow-brand-primary/20">
               <Search className="w-4 h-4 mr-1" />
@@ -136,7 +136,7 @@ export function AdminPage() {
               {searchResults.map((a: any) => (
                 <div
                   key={a.id}
-                  className="flex items-center justify-between p-3 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
+                  className="flex items-center justify-between p-3 rounded-xl border border-white/[0.10] bg-white/[0.05] hover:bg-white/[0.08] transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-lg font-semibold text-white">
