@@ -17,7 +17,8 @@
     "stats_users": "位创作者",
     "stats_hires": "次使用",
     "featured": "精选推荐",
-    "trending": "本周热门"
+    "trending": "本周热门",
+    "view_all": "查看全部"
   },
   "marketplace": {
     "title": "智能体广场",
@@ -33,7 +34,8 @@
     "view_grid": "网格",
     "view_list": "列表",
     "no_results": "暂无符合条件的智能体",
-    "load_more": "加载更多"
+    "load_more": "加载更多",
+    "total_agents": "共 {{count}} 个智能体"
   },
   "agent": {
     "hire_count": "{{count}} 次使用",
@@ -73,6 +75,9 @@
     "review_comment": "评价内容（选填）",
     "submit_review": "提交评价",
     "related": "相关智能体",
+    "featured": "精选",
+    "collapse": "收起",
+    "expand_all": "展开全部",
     "inherited_from": "继承自"
   },
   "upload": {
@@ -103,7 +108,11 @@
     "next": "下一步",
     "prev": "上一步",
     "preview": "预览",
-    "required_field": "此字段为必填"
+    "required_field": "此字段为必填",
+    "prompt_language": "提示词语言",
+    "json_error": "JSON 格式错误",
+    "mcp_skip_hint": "如无 MCP 配置，可跳过此步骤",
+    "default_name": "智能体名称"
   },
   "profile": {
     "my_agents": "我的智能体",
@@ -115,6 +124,8 @@
     "next_badge": "距下一等级还需 {{points}} 积分",
     "create_agent": "发布新智能体",
     "no_agents": "还没有发布过智能体",
+    "no_points": "暂无积分记录",
+    "no_bookmarks": "暂无收藏",
     "edit": "编辑",
     "delete": "删除",
     "unpublish": "下架"

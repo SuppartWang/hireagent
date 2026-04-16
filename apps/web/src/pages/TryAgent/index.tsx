@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Send, Bot, User, Download } from 'lucide-react'
-import { Agent, CATEGORY_LABELS, CAPABILITY_LABELS } from '@hireagent/shared'
-import { agentsApi } from '../../api'
-import { useUIStore } from '../../store/uiStore'
-import { cn } from '../../utils/cn'
+import { CATEGORY_LABELS, CAPABILITY_LABELS } from '@hireagent/shared'
+import { useUIStore } from '@/store/uiStore'
+import { useAgent } from '@/hooks/use-agents'
+import { cn } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
 
 interface Message {
   id: string
@@ -18,21 +20,12 @@ export function TryAgentPage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { openExportModal } = useUIStore()
-  const [agent, setAgent] = useState<Agent | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: agent, isLoading } = useAgent(slug || '')
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [simulating, setSimulating] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const lang = i18n.language
-
-  useEffect(() => {
-    if (!slug) return
-    agentsApi.getBySlug(slug)
-      .then(res => setAgent(res.data))
-      .catch(() => setAgent(null))
-      .finally(() => setLoading(false))
-  }, [slug])
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -45,7 +38,6 @@ export function TryAgentPage() {
     setInput('')
     setSimulating(true)
 
-    // Simulate a delay for "thinking"
     await new Promise(r => setTimeout(r, 800))
 
     const caps = agent.capabilities
@@ -64,13 +56,11 @@ export function TryAgentPage() {
     setSimulating(false)
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-surface-raised rounded w-1/3" />
-          <div className="h-64 bg-surface-raised rounded" />
-        </div>
+        <Skeleton className="h-8 w-1/3 mb-4" />
+        <Skeleton className="h-64" />
       </div>
     )
   }
@@ -96,19 +86,16 @@ export function TryAgentPage() {
         </button>
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-300 hidden sm:inline">{t('agent.try_title', { name })}</span>
-          <button
-            onClick={() => openExportModal(agent.id, name)}
-            className="btn-primary text-sm px-3 py-1.5 flex items-center gap-1"
-          >
+          <Button size="sm" onClick={() => openExportModal(agent.id, name)} className="flex items-center gap-1">
             <Download className="w-4 h-4" />
             {t('agent.hire_now')}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Info card */}
       <div className="card p-4 mb-4 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-surface-overlay flex items-center justify-center text-xl">
+        <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-xl">
           {agent.avatarUrl ? <img src={agent.avatarUrl} alt={name} className="w-full h-full rounded-xl object-cover" /> : agent.nameZh?.[0] || '🤖'}
         </div>
         <div className="flex-1 min-w-0">
@@ -130,7 +117,7 @@ export function TryAgentPage() {
         {messages.map(msg => (
           <div key={msg.id} className={cn('flex gap-3', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
             {msg.role === 'agent' && (
-              <div className="w-8 h-8 rounded-lg bg-brand-primary/20 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
                 <Bot className="w-4 h-4 text-brand-accent" />
               </div>
             )}
@@ -138,14 +125,14 @@ export function TryAgentPage() {
               className={cn(
                 'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap',
                 msg.role === 'user'
-                  ? 'bg-brand-primary text-white rounded-br-md'
-                  : 'bg-surface-raised text-slate-200 rounded-bl-md border border-surface-border'
+                  ? 'bg-primary text-primary-foreground rounded-br-md'
+                  : 'bg-card text-foreground rounded-bl-md border border-border'
               )}
             >
               {msg.content}
             </div>
             {msg.role === 'user' && (
-              <div className="w-8 h-8 rounded-lg bg-surface-overlay flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
                 <User className="w-4 h-4 text-slate-400" />
               </div>
             )}
@@ -153,10 +140,10 @@ export function TryAgentPage() {
         ))}
         {simulating && (
           <div className="flex gap-3 justify-start">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/20 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
               <Bot className="w-4 h-4 text-brand-accent" />
             </div>
-            <div className="bg-surface-raised text-slate-200 rounded-2xl rounded-bl-md border border-surface-border px-4 py-2.5 text-sm flex items-center gap-1">
+            <div className="bg-card text-foreground rounded-2xl rounded-bl-md border border-border px-4 py-2.5 text-sm flex items-center gap-1">
               <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" />
               <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.1s]" />
               <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]" />
@@ -186,14 +173,13 @@ export function TryAgentPage() {
           placeholder={t('agent.try_input_placeholder')}
           className="input flex-1"
         />
-        <button
+        <Button
           onClick={handleSend}
           disabled={!input.trim() || simulating}
-          className="btn-primary px-4 flex items-center gap-1 disabled:opacity-50"
         >
           <Send className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('agent.try_simulate')}</span>
-        </button>
+          <span className="hidden sm:inline ml-1">{t('agent.try_simulate')}</span>
+        </Button>
       </div>
     </div>
   )

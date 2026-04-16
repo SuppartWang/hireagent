@@ -1,46 +1,29 @@
-import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Bot, TrendingUp, Star, Download, ArrowRight } from 'lucide-react'
-import { AgentListItem } from '@hireagent/shared'
-import { agentsApi } from '../../api'
-import { AgentCard } from '../../components/agent/AgentCard'
-
-interface PlatformStats {
-  total_agents: number
-  total_users: number
-  total_hires: number
-}
+import { AgentCard } from '@/components/agent/AgentCard'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useFeaturedAgents, useTrendingAgents, usePlatformStats } from '@/hooks/use-agents'
 
 export function HomePage() {
   const { t } = useTranslation()
-  const [featured, setFeatured] = useState<AgentListItem[]>([])
-  const [trending, setTrending] = useState<AgentListItem[]>([])
-  const [stats, setStats] = useState<PlatformStats | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    Promise.all([
-      agentsApi.featured(),
-      agentsApi.trending(),
-      agentsApi.platformStats(),
-    ]).then(([featRes, trendRes, statsRes]) => {
-      setFeatured(featRes.data)
-      setTrending(trendRes.data)
-      setStats(statsRes.data)
-    }).catch(console.error).finally(() => setLoading(false))
-  }, [])
+  const { data: featured, isLoading: featuredLoading } = useFeaturedAgents()
+  const { data: trending, isLoading: trendingLoading } = useTrendingAgents()
+  const { data: stats } = usePlatformStats()
 
   return (
-    <div>
+    <div className="relative overflow-hidden">
+      {/* Ambient background glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-radial from-brand-primary/15 via-brand-secondary/5 to-transparent opacity-60 pointer-events-none blur-3xl" />
+
       {/* Hero */}
       <section className="relative overflow-hidden py-20 px-4">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/10 via-transparent to-brand-secondary/10 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/15 via-transparent to-brand-secondary/10 pointer-events-none" />
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="w-16 h-16 bg-gradient-to-br from-brand-primary to-brand-secondary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-brand-primary/25">
-            <Bot className="w-9 h-9 text-white" />
+          <div className="w-20 h-20 bg-gradient-to-br from-brand-primary to-brand-secondary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-brand-primary/30 ring-4 ring-brand-primary/10">
+            <Bot className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-slate-300">
             {t('home.hero_title')}
           </h1>
           <p className="text-lg text-slate-400 mb-8 max-w-2xl mx-auto">
@@ -60,15 +43,15 @@ export function HomePage() {
 
       {/* Stats */}
       {stats && (
-        <section className="pb-8 px-4">
+        <section className="pb-8 px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
             <div className="grid grid-cols-3 gap-4">
               {[
-                { value: stats.total_agents, label: t('home.stats_agents'), icon: Bot },
-                { value: stats.total_users, label: t('home.stats_users'), icon: Star },
-                { value: stats.total_hires, label: t('home.stats_hires'), icon: Download },
+                { value: stats.totalAgents, label: t('home.stats_agents'), icon: Bot },
+                { value: stats.totalUsers, label: t('home.stats_users'), icon: Star },
+                { value: stats.totalHires, label: t('home.stats_hires'), icon: Download },
               ].map(({ value, label, icon: Icon }) => (
-                <div key={label} className="card text-center">
+                <div key={label} className="card text-center hover:-translate-y-0.5">
                   <Icon className="w-5 h-5 mx-auto mb-2 text-brand-accent" />
                   <div className="text-2xl font-bold text-white">{value?.toLocaleString()}</div>
                   <div className="text-sm text-slate-400">{label}</div>
@@ -80,8 +63,19 @@ export function HomePage() {
       )}
 
       {/* Featured */}
-      {featured.length > 0 && (
-        <section className="py-8 px-4">
+      {featuredLoading ? (
+        <section className="py-8 px-4 relative z-10">
+          <div className="max-w-7xl mx-auto">
+            <Skeleton className="h-8 w-48 mb-6" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-64" />
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : featured && featured.length > 0 ? (
+        <section className="py-8 px-4 relative z-10">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -89,7 +83,7 @@ export function HomePage() {
                 {t('home.featured')}
               </h2>
               <Link to="/marketplace?sort=ranking" className="text-brand-accent text-sm hover:underline flex items-center gap-1">
-                查看全部 <ArrowRight className="w-4 h-4" />
+                {t('home.view_all')} <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -97,11 +91,22 @@ export function HomePage() {
             </div>
           </div>
         </section>
-      )}
+      ) : null}
 
       {/* Trending */}
-      {trending.length > 0 && (
-        <section className="py-8 px-4">
+      {trendingLoading ? (
+        <section className="py-8 px-4 relative z-10">
+          <div className="max-w-7xl mx-auto">
+            <Skeleton className="h-8 w-48 mb-6" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-56" />
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : trending && trending.length > 0 ? (
+        <section className="py-8 px-4 relative z-10">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -109,7 +114,7 @@ export function HomePage() {
                 {t('home.trending')}
               </h2>
               <Link to="/marketplace?sort=trending" className="text-brand-accent text-sm hover:underline flex items-center gap-1">
-                查看全部 <ArrowRight className="w-4 h-4" />
+                {t('home.view_all')} <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -117,7 +122,7 @@ export function HomePage() {
             </div>
           </div>
         </section>
-      )}
+      ) : null}
     </div>
   )
 }

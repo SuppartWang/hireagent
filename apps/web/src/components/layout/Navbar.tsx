@@ -2,9 +2,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Bot, Upload, User, LogOut, Globe, Menu, X } from 'lucide-react'
 import { useState } from 'react'
-import { useAuthStore } from '../../store/authStore'
-import { useUIStore } from '../../store/uiStore'
-import i18n from '../../i18n'
+import { useAuthStore } from '@/store/authStore'
+import { useUIStore } from '@/store/uiStore'
+import i18n from '@/i18n'
 
 export function Navbar() {
   const { t } = useTranslation()
@@ -25,7 +25,7 @@ export function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-surface-raised/80 backdrop-blur-md border-b border-surface-border">
+    <nav className="sticky top-0 z-50 bg-card/70 backdrop-blur-xl border-b border-border/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -44,7 +44,7 @@ export function Navbar() {
               {t('nav.marketplace')}
             </Link>
             {user && (
-              <Link to="/upload" className="text-slate-300 hover:text-white transition-colors text-sm font-medium flex items-center gap-1">
+              <Link to="/upload" className="text-slate-300 hover:text-white transition-colors text-sm font-medium flex items-center gap-1 hover:underline underline-offset-4 decoration-brand-primary/50">
                 <Upload className="w-4 h-4" />
                 {t('nav.upload')}
               </Link>
@@ -55,7 +55,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={toggleLang}
-              className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors text-sm px-2 py-1 rounded-md hover:bg-surface-overlay"
+              className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors text-sm px-2 py-1 rounded-md hover:bg-secondary"
             >
               <Globe className="w-4 h-4" />
               {lang === 'zh-CN' ? t('common.lang_en') : t('common.lang_zh')}
@@ -65,14 +65,14 @@ export function Navbar() {
               <div className="flex items-center gap-2">
                 <Link
                   to="/profile"
-                  className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors text-sm px-3 py-1.5 rounded-lg hover:bg-surface-overlay"
+                  className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors text-sm px-3 py-1.5 rounded-lg hover:bg-secondary"
                 >
                   <User className="w-4 h-4" />
                   {user.displayName || user.username}
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-slate-400 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-surface-overlay"
+                  className="text-slate-400 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-secondary"
                   title={t('nav.logout')}
                 >
                   <LogOut className="w-4 h-4" />
@@ -99,20 +99,20 @@ export function Navbar() {
         {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden py-3 border-t border-surface-border space-y-2">
-            <Link to="/marketplace" className="block px-3 py-2 text-slate-300 hover:text-white rounded-lg hover:bg-surface-overlay" onClick={() => setMenuOpen(false)}>
+            <Link to="/marketplace" className="block px-3 py-2 text-slate-300 hover:text-white rounded-lg hover:bg-secondary" onClick={() => setMenuOpen(false)}>
               {t('nav.marketplace')}
             </Link>
             {user && (
-              <Link to="/upload" className="block px-3 py-2 text-slate-300 hover:text-white rounded-lg hover:bg-surface-overlay" onClick={() => setMenuOpen(false)}>
+              <Link to="/upload" className="block px-3 py-2 text-slate-300 hover:text-white rounded-lg hover:bg-secondary" onClick={() => setMenuOpen(false)}>
                 {t('nav.upload')}
               </Link>
             )}
             {user ? (
               <>
-                <Link to="/profile" className="block px-3 py-2 text-slate-300 hover:text-white rounded-lg hover:bg-surface-overlay" onClick={() => setMenuOpen(false)}>
+                <Link to="/profile" className="block px-3 py-2 text-slate-300 hover:text-white rounded-lg hover:bg-secondary" onClick={() => setMenuOpen(false)}>
                   {t('nav.profile')}
                 </Link>
-                <button onClick={handleLogout} className="block w-full text-left px-3 py-2 text-red-400 rounded-lg hover:bg-surface-overlay">
+                <button onClick={handleLogout} className="block w-full text-left px-3 py-2 text-red-400 rounded-lg hover:bg-secondary">
                   {t('nav.logout')}
                 </button>
               </>

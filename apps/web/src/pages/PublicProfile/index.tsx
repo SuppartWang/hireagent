@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Award, Star, Download, Calendar, Bot, ArrowLeft } from 'lucide-react'
-import { usersApi } from '../../api'
 import { CATEGORY_LABELS, AgentCategory } from '@hireagent/shared'
-import { cn } from '../../utils/cn'
+import { usePublicProfile } from '@/hooks/use-users'
+import { cn } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const BADGE_COLORS: Record<string, string> = {
   '新星': 'from-slate-400 to-slate-600',
@@ -13,40 +13,17 @@ const BADGE_COLORS: Record<string, string> = {
   '大师': 'from-brand-secondary to-purple-700',
 }
 
-interface PublicUser {
-  id: string
-  username: string
-  display_name?: string
-  avatar_url?: string
-  bio?: string
-  badge_tier: string
-  total_points: number
-  created_at: string
-  agents: any[]
-}
-
 export function PublicProfilePage() {
   const { username } = useParams<{ username: string }>()
   const { t, i18n } = useTranslation()
-  const [profile, setProfile] = useState<PublicUser | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: profile, isLoading } = usePublicProfile(username || '')
   const lang = i18n.language
 
-  useEffect(() => {
-    if (!username) return
-    usersApi.publicProfile(username)
-      .then(res => setProfile(res.data))
-      .catch(() => setProfile(null))
-      .finally(() => setLoading(false))
-  }, [username])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="animate-pulse space-y-4">
-          <div className="h-32 bg-surface-raised rounded-xl" />
-          <div className="h-8 bg-surface-raised rounded w-1/3" />
-        </div>
+        <Skeleton className="h-32 rounded-xl mb-6" />
+        <Skeleton className="h-8 w-1/3" />
       </div>
     )
   }
@@ -75,7 +52,7 @@ export function PublicProfilePage() {
       {/* Profile Header */}
       <div className="card mb-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="w-20 h-20 rounded-2xl bg-surface-overlay border border-surface-border flex items-center justify-center text-3xl">
+          <div className="w-20 h-20 rounded-2xl bg-secondary border border-border flex items-center justify-center text-3xl">
             {profile.avatar_url ? <img src={profile.avatar_url} className="w-full h-full rounded-2xl object-cover" alt="" /> : '👤'}
           </div>
           <div className="flex-1">
@@ -115,10 +92,10 @@ export function PublicProfilePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {profile.agents.map(a => (
-              <Link key={a.id} to={`/agents/${a.slug}`} className="card hover:border-brand-primary/50 transition-colors group">
+            {profile.agents.map((a: any) => (
+              <Link key={a.id} to={`/agents/${a.slug}`} className="card hover:border-primary/50 transition-colors group">
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-surface-overlay flex items-center justify-center text-xl flex-shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-xl flex-shrink-0">
                     {a.name_zh?.[0] || '🤖'}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -126,7 +103,7 @@ export function PublicProfilePage() {
                     <p className="text-xs text-slate-500 mt-0.5">{lang === 'zh-CN' ? CATEGORY_LABELS[a.category as AgentCategory]?.zh : CATEGORY_LABELS[a.category as AgentCategory]?.en}</p>
                     <div className="flex items-center gap-3 text-xs text-slate-500 mt-2">
                       <span className="flex items-center gap-1"><Download className="w-3 h-3" />{a.hire_count}</span>
-                      <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />{a.rating_avg?.toFixed(1) || '–'}</span>
+                      <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />{Number(a.ratingAvg || 0).toFixed(1) || '–'}</span>
                     </div>
                   </div>
                 </div>

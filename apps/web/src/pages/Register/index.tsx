@@ -1,23 +1,31 @@
-import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '../../store/authStore'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { useAuthStore } from '@/store/authStore'
+import { registerSchema, type RegisterFormValues } from '@/lib/schemas'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { toast } from 'sonner'
 
 export function RegisterPage() {
   const { t } = useTranslation()
-  const { register, isLoading } = useAuthStore()
+  const { register } = useAuthStore()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '', username: '', displayName: '' })
-  const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { email: '', password: '', username: '', displayName: '' },
+  })
+
+  const onSubmit = async (values: RegisterFormValues) => {
     try {
-      await register(form.email, form.password, form.username, form.displayName)
+      await register(values.email, values.password, values.username, values.displayName)
       navigate('/')
     } catch (err: any) {
-      setError(err.response?.data?.error || t('common.error'))
+      const msg = err?.response?.data?.error || t('common.error')
+      toast.error(msg)
     }
   }
 
@@ -25,31 +33,70 @@ export function RegisterPage() {
     <div className="min-h-[70vh] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <h1 className="text-2xl font-bold text-white mb-6 text-center">{t('auth.register_title')}</h1>
-        <form onSubmit={handleSubmit} className="card space-y-4">
-          {error && <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-red-400 text-sm">{error}</div>}
-          <div>
-            <label className="block text-sm text-slate-400 mb-1">{t('auth.email')}</label>
-            <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="input w-full" required />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-400 mb-1">{t('auth.username')}</label>
-            <input type="text" value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} className="input w-full" required />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-400 mb-1">{t('auth.display_name')}</label>
-            <input type="text" value={form.displayName} onChange={e => setForm(f => ({ ...f, displayName: e.target.value }))} className="input w-full" />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-400 mb-1">{t('auth.password')}</label>
-            <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} className="input w-full" required minLength={8} />
-          </div>
-          <button type="submit" disabled={isLoading} className="btn-primary w-full py-2.5">
-            {isLoading ? t('common.loading') : t('auth.register_btn')}
-          </button>
+        <div className="card space-y-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.email')}</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="you@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.username')}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="displayName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.display_name')}</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.password')}</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? t('common.loading') : t('auth.register_btn')}
+              </Button>
+            </form>
+          </Form>
           <p className="text-center text-sm text-slate-400">
             <Link to="/login" className="text-brand-accent hover:underline">{t('auth.has_account')}</Link>
           </p>
-        </form>
+        </div>
       </div>
     </div>
   )

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X, Download, Copy, Check } from 'lucide-react'
-import { agentsApi } from '../../api'
-import { cn } from '../../utils/cn'
+import { agentsApi } from '@/api'
+import { cn } from '@/lib/utils'
 
 type ExportTab = 'claude' | 'openclaw' | 'generic' | 'yaml' | 'prompt'
 

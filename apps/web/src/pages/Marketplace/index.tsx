@@ -1,12 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Search, Grid, List, SlidersHorizontal } from 'lucide-react'
-import { AgentListItem, AgentCategory, AgentCapability, SortOption, CATEGORY_LABELS, CAPABILITY_LABELS } from '@hireagent/shared'
-import { agentsApi } from '../../api'
-import { AgentCard } from '../../components/agent/AgentCard'
-import { useUIStore } from '../../store/uiStore'
-import { cn } from '../../utils/cn'
+import { AgentCategory, AgentCapability, SortOption, CATEGORY_LABELS, CAPABILITY_LABELS } from '@hireagent/shared'
+import { AgentCard } from '@/components/agent/AgentCard'
+import { useUIStore } from '@/store/uiStore'
+import { useAgents } from '@/hooks/use-agents'
+import { cn } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 const SORT_OPTIONS: SortOption[] = ['ranking', 'newest', 'rating', 'usage', 'trending']
 
@@ -14,10 +17,7 @@ export function MarketplacePage() {
   const { t, i18n } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { viewMode, setViewMode } = useUIStore()
-  const [agents, setAgents] = useState<AgentListItem[]>([])
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(true)
   const [filterOpen, setFilterOpen] = useState(false)
 
   const sort = (searchParams.get('sort') || 'ranking') as SortOption
@@ -27,40 +27,35 @@ export function MarketplacePage() {
   const q = searchParams.get('q') || ''
   const [searchInput, setSearchInput] = useState(q)
 
-  const fetchAgents = useCallback(async (p = 1) => {
-    setLoading(true)
-    try {
-      const { data } = await agentsApi.list({
-        sort,
-        category: category !== 'all' ? category as AgentCategory : undefined,
-        capabilities: selectedCapabilities.length ? selectedCapabilities as AgentCapability[] : undefined,
-        search: q || undefined,
-        page: p,
-        limit: 20,
-      })
-      setAgents(p === 1 ? data.data : prev => [...prev, ...data.data])
-      setTotal(data.total)
-      setPage(p)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }, [sort, category, q, selectedCapabilities.join(',')])
+  const filters = {
+    sort,
+    category: category !== 'all' ? category as AgentCategory : undefined,
+    capabilities: selectedCapabilities.length ? selectedCapabilities as AgentCapability[] : undefined,
+    search: q || undefined,
+    page,
+    limit: 20,
+  }
 
-  useEffect(() => { fetchAgents(1) }, [fetchAgents])
+  const { data, isLoading, isFetching } = useAgents(filters)
+  const agents = data?.data || []
+  const total = data?.total || 0
 
-  const updateParam = (key: string, value: string) => {
+  const updateParam = useCallback((key: string, value: string) => {
     const p = new URLSearchParams(searchParams)
     value ? p.set(key, value) : p.delete(key)
     p.delete('page')
     setSearchParams(p)
-  }
+    setPage(1)
+  }, [searchParams, setSearchParams])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     updateParam('q', searchInput)
   }
+
+  const loadMore = () => setPage(p => p + 1)
+
+  const showSkeleton = isLoading && agents.length === 0
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -71,31 +66,32 @@ export function MarketplacePage() {
         <div className="flex flex-col sm:flex-row gap-3">
           <form onSubmit={handleSearch} className="flex-1 flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
                 type="text"
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
                 placeholder={t('marketplace.search_placeholder')}
-                className="input w-full pl-9"
+                className="w-full pl-9"
               />
             </div>
-            <button type="submit" className="btn-primary px-4">搜索</button>
+            <Button type="submit">{t('common.search')}</Button>
           </form>
 
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="outline"
               onClick={() => setFilterOpen(!filterOpen)}
-              className={cn('btn-secondary flex items-center gap-1.5', filterOpen && 'bg-brand-primary/20 text-brand-accent border-brand-primary/30')}
+              className={cn('flex items-center gap-1.5', filterOpen && 'border-primary text-primary')}
             >
               <SlidersHorizontal className="w-4 h-4" />
               <span className="hidden sm:inline">{t('marketplace.filter_category')}</span>
-            </button>
-            <div className="flex border border-surface-border rounded-lg overflow-hidden">
-              <button onClick={() => setViewMode('grid')} className={cn('p-2', viewMode === 'grid' ? 'bg-brand-primary text-white' : 'bg-surface-overlay text-slate-400 hover:text-white')}>
+            </Button>
+            <div className="flex border border-border rounded-lg overflow-hidden">
+              <button onClick={() => setViewMode('grid')} className={cn('p-2', viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-slate-400 hover:text-white')}>
                 <Grid className="w-4 h-4" />
               </button>
-              <button onClick={() => setViewMode('list')} className={cn('p-2', viewMode === 'list' ? 'bg-brand-primary text-white' : 'bg-surface-overlay text-slate-400 hover:text-white')}>
+              <button onClick={() => setViewMode('list')} className={cn('p-2', viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-slate-400 hover:text-white')}>
                 <List className="w-4 h-4" />
               </button>
             </div>
@@ -110,7 +106,7 @@ export function MarketplacePage() {
               onClick={() => updateParam('sort', s)}
               className={cn(
                 'px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors',
-                sort === s ? 'bg-brand-primary text-white' : 'text-slate-400 hover:text-white hover:bg-surface-overlay'
+                sort === s ? 'bg-primary text-primary-foreground' : 'text-slate-400 hover:text-white hover:bg-secondary'
               )}
             >
               {t(`marketplace.sort_${s}`)}
@@ -126,7 +122,7 @@ export function MarketplacePage() {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => updateParam('category', '')}
-                  className={cn('badge cursor-pointer', category === 'all' ? 'bg-brand-primary text-white' : 'bg-surface-overlay text-slate-400 hover:text-white')}
+                  className={cn('badge cursor-pointer', category === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-slate-400 hover:text-white')}
                 >
                   {t('marketplace.all_categories')}
                 </button>
@@ -134,7 +130,7 @@ export function MarketplacePage() {
                   <button
                     key={key}
                     onClick={() => updateParam('category', key)}
-                    className={cn('badge cursor-pointer', category === key ? 'bg-brand-primary text-white' : 'bg-surface-overlay text-slate-400 hover:text-white')}
+                    className={cn('badge cursor-pointer', category === key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-slate-400 hover:text-white')}
                   >
                     {i18n.language === 'zh-CN' ? labels.zh : labels.en}
                   </button>
@@ -153,7 +149,7 @@ export function MarketplacePage() {
                     <button
                       key={key}
                       onClick={() => updateParam('capabilities', next.join(','))}
-                      className={cn('badge cursor-pointer', active ? 'bg-brand-secondary text-white' : 'bg-surface-overlay text-slate-400 hover:text-white')}
+                      className={cn('badge cursor-pointer', active ? 'bg-brand-secondary text-white' : 'bg-secondary text-slate-400 hover:text-white')}
                     >
                       {i18n.language === 'zh-CN' ? labels.zh : labels.en}
                     </button>
@@ -166,16 +162,10 @@ export function MarketplacePage() {
       </div>
 
       {/* Results */}
-      {loading && agents.length === 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {showSkeleton ? (
+        <div className={cn('gap-4', viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'flex flex-col')}>
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="card h-64 animate-pulse">
-              <div className="w-14 h-14 bg-surface-overlay rounded-xl mb-3" />
-              <div className="h-4 bg-surface-overlay rounded w-2/3 mb-2" />
-              <div className="h-3 bg-surface-overlay rounded w-1/3 mb-3" />
-              <div className="h-3 bg-surface-overlay rounded w-full mb-1" />
-              <div className="h-3 bg-surface-overlay rounded w-3/4" />
-            </div>
+            <Skeleton key={i} className="h-64" />
           ))}
         </div>
       ) : agents.length === 0 ? (
@@ -185,7 +175,7 @@ export function MarketplacePage() {
         </div>
       ) : (
         <>
-          <p className="text-sm text-slate-500 mb-4">共 {total} 个智能体</p>
+          <p className="text-sm text-slate-500 mb-4">{t('marketplace.total_agents', { count: total })}</p>
           <div className={cn(
             'gap-4',
             viewMode === 'grid'
@@ -196,9 +186,9 @@ export function MarketplacePage() {
           </div>
           {agents.length < total && (
             <div className="mt-8 text-center">
-              <button onClick={() => fetchAgents(page + 1)} disabled={loading} className="btn-secondary px-8">
-                {loading ? t('common.loading') : t('marketplace.load_more')}
-              </button>
+              <Button variant="secondary" onClick={loadMore} disabled={isFetching}>
+                {isFetching ? t('common.loading') : t('marketplace.load_more')}
+              </Button>
             </div>
           )}
         </>

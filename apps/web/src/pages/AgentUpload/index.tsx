@@ -3,9 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, ChevronLeft, Eye } from 'lucide-react'
 import { AgentCategory, AgentCapability, CATEGORY_LABELS, CAPABILITY_LABELS } from '@hireagent/shared'
-import { agentsApi } from '../../api'
-import { useAuthStore } from '../../store/authStore'
-import { cn } from '../../utils/cn'
+import { useAuthStore } from '@/store/authStore'
+import { cn } from '@/lib/utils'
+import { useAgent, useCreateAgent, useUpdateAgent, usePublishAgent } from '@/hooks/use-agents'
+import { toast } from 'sonner'
 
 type Step = 1 | 2 | 3 | 4 | 5
 
@@ -41,44 +42,41 @@ export function AgentUploadPage() {
   const { user } = useAuthStore()
   const navigate = useNavigate()
   const { slug } = useParams<{ slug?: string }>()
+  const { data: existingAgent, isLoading } = useAgent(slug || '')
+  const { mutateAsync: createAgent, isPending: creating } = useCreateAgent()
+  const { mutateAsync: updateAgent, isPending: updating } = useUpdateAgent()
+  const { mutateAsync: publishAgent, isPending: publishing } = usePublishAgent()
+
   const [step, setStep] = useState<Step>(1)
   const [form, setForm] = useState<FormData>(INITIAL)
-  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(!!slug)
   const [agentId, setAgentId] = useState<string>('')
   const lang = i18n.language
 
   if (!user) { navigate('/login'); return null }
 
   useEffect(() => {
-    if (!slug) return
-    agentsApi.getBySlug(slug)
-      .then(res => {
-        const a = res.data
-        setAgentId(a.id)
-        setForm({
-          nameZh: a.nameZh || '',
-          nameEn: a.nameEn || '',
-          taglineZh: a.taglineZh || '',
-          taglineEn: a.taglineEn || '',
-          descriptionZh: a.descriptionZh || '',
-          descriptionEn: a.descriptionEn || '',
-          category: a.category || 'other',
-          avatarUrl: a.avatarUrl || '',
-          systemPrompt: a.systemPrompt || '',
-          systemPromptLang: a.systemPromptLang || 'zh-CN',
-          mcpConfigRaw: a.mcpConfig ? JSON.stringify(a.mcpConfig, null, 2) : '',
-          mcpConfigValid: true,
-          capabilities: a.capabilities || [],
-          tags: (a.tags || []).join(', '),
-          supportedModels: (a.supportedModels || []).join(', '),
-          languageSupport: a.languageSupport || ['zh-CN'],
-        })
-      })
-      .catch(err => setError(err.response?.data?.error || t('common.error')))
-      .finally(() => setLoading(false))
-  }, [slug, t])
+    if (!slug || !existingAgent) return
+    setAgentId(existingAgent.id)
+    setForm({
+      nameZh: existingAgent.nameZh || '',
+      nameEn: existingAgent.nameEn || '',
+      taglineZh: existingAgent.taglineZh || '',
+      taglineEn: existingAgent.taglineEn || '',
+      descriptionZh: existingAgent.descriptionZh || '',
+      descriptionEn: existingAgent.descriptionEn || '',
+      category: existingAgent.category || 'other',
+      avatarUrl: existingAgent.avatarUrl || '',
+      systemPrompt: existingAgent.systemPrompt || '',
+      systemPromptLang: existingAgent.systemPromptLang || 'zh-CN',
+      mcpConfigRaw: existingAgent.mcpConfig ? JSON.stringify(existingAgent.mcpConfig, null, 2) : '',
+      mcpConfigValid: true,
+      capabilities: existingAgent.capabilities || [],
+      tags: (existingAgent.tags || []).join(', '),
+      supportedModels: (existingAgent.supportedModels || []).join(', '),
+      languageSupport: existingAgent.languageSupport || ['zh-CN'],
+    })
+  }, [slug, existingAgent])
 
   const set = (key: keyof FormData, val: any) => setForm(f => ({ ...f, [key]: val }))
 
@@ -102,8 +100,10 @@ export function AgentUploadPage() {
     setForm(f => ({ ...f, mcpConfigRaw: raw, mcpConfigValid: valid }))
   }
 
+  const saving = creating || updating || publishing
+
   const save = async (publish = false) => {
-    setSaving(true); setError('')
+    setError('')
     try {
       const payload = {
         nameZh: form.nameZh, nameEn: form.nameEn || undefined,
@@ -117,12 +117,17 @@ export function AgentUploadPage() {
         supportedModels: form.supportedModels.split(',').map(s => s.trim()).filter(Boolean),
         languageSupport: form.languageSupport,
       }
-      const { data } = slug ? await agentsApi.update(agentId, payload) : await agentsApi.create(payload)
-      if (publish) await agentsApi.publish(data.id)
+      const data = slug
+        ? await updateAgent({ id: agentId, payload })
+        : await createAgent(payload)
+      if (publish) await publishAgent(data.id)
       navigate(`/agents/${data.slug}`)
+      toast.success(t('common.success'))
     } catch (err: any) {
-      setError(err.response?.data?.error || t('common.error'))
-    } finally { setSaving(false) }
+      const msg = err?.response?.data?.error || err?.message || t('common.error')
+      setError(msg)
+      toast.error(msg)
+    }
   }
 
   const steps = [
@@ -134,7 +139,7 @@ export function AgentUploadPage() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-white mb-6">{slug ? t('upload.edit_title') : t('upload.title')}</h1>
 
-      {loading && <div className="text-slate-400 mb-4">{t('common.loading')}</div>}
+      {isLoading && <div className="text-slate-400 mb-4">{t('common.loading')}</div>}
 
       {/* Step indicator */}
       <div className="flex items-center gap-2 mb-8">
@@ -143,20 +148,20 @@ export function AgentUploadPage() {
             <div className={cn(
               'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0',
               step > i + 1 ? 'bg-green-500 text-white'
-                : step === i + 1 ? 'bg-brand-primary text-white'
-                : 'bg-surface-overlay text-slate-500'
+                : step === i + 1 ? 'bg-primary text-white'
+                : 'bg-secondary text-slate-500'
             )}>
               {step > i + 1 ? '✓' : i + 1}
             </div>
             <span className={cn('text-xs truncate hidden sm:block', step === i + 1 ? 'text-white' : 'text-slate-500')}>
               {label}
             </span>
-            {i < 4 && <div className={cn('h-px flex-1 hidden sm:block', step > i + 1 ? 'bg-green-500' : 'bg-surface-border')} />}
+            {i < 4 && <div className={cn('h-px flex-1 hidden sm:block', step > i + 1 ? 'bg-green-500' : 'bg-border')} />}
           </div>
         ))}
       </div>
 
-      {error && <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-red-400 text-sm mb-4">{error}</div>}
+      {error && <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 text-destructive text-sm mb-4">{error}</div>}
 
       <div className="card space-y-4">
         {/* Step 1: Basic Info */}
@@ -206,7 +211,7 @@ export function AgentUploadPage() {
               />
             </div>
             <div>
-              <label className="block text-sm text-slate-400 mb-1">提示词语言</label>
+              <label className="block text-sm text-slate-400 mb-1">{t('upload.prompt_language')}</label>
               <select className="input w-full" value={form.systemPromptLang} onChange={e => set('systemPromptLang', e.target.value)}>
                 <option value="zh-CN">中文</option>
                 <option value="en">English</option>
@@ -220,13 +225,13 @@ export function AgentUploadPage() {
           <div>
             <label className="block text-sm text-slate-400 mb-1">{t('upload.mcp_config_label')}</label>
             <textarea
-              className={cn('input w-full h-48 resize-none font-mono text-sm', !form.mcpConfigValid && 'border-red-500/50 focus:ring-red-500')}
+              className={cn('input w-full h-48 resize-none font-mono text-sm', !form.mcpConfigValid && 'border-destructive focus:ring-destructive')}
               value={form.mcpConfigRaw}
               onChange={e => handleMCPChange(e.target.value)}
               placeholder={t('upload.mcp_config_placeholder')}
             />
-            {!form.mcpConfigValid && <p className="text-red-400 text-xs mt-1">JSON 格式错误</p>}
-            <p className="text-slate-500 text-xs mt-2">如无 MCP 配置，可跳过此步骤</p>
+            {!form.mcpConfigValid && <p className="text-destructive text-xs mt-1">{t('upload.json_error')}</p>}
+            <p className="text-slate-500 text-xs mt-2">{t('upload.mcp_skip_hint')}</p>
           </div>
         )}
 
@@ -243,7 +248,7 @@ export function AgentUploadPage() {
                     type="button"
                     className={cn('badge cursor-pointer transition-colors', form.capabilities.includes(cap)
                       ? 'bg-brand-secondary text-white'
-                      : 'bg-surface-overlay text-slate-400 hover:text-white')}
+                      : 'bg-secondary text-slate-400 hover:text-white')}
                   >
                     {lang === 'zh-CN' ? CAPABILITY_LABELS[cap].zh : CAPABILITY_LABELS[cap].en}
                   </button>
@@ -278,13 +283,13 @@ export function AgentUploadPage() {
         {step === 5 && (
           <div>
             <h3 className="font-medium text-white mb-4 flex items-center gap-2"><Eye className="w-4 h-4" />{t('upload.preview')}</h3>
-            <div className="bg-surface-overlay rounded-xl p-4 space-y-3">
+            <div className="bg-secondary rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-surface-border flex items-center justify-center text-2xl">
+                <div className="w-12 h-12 rounded-xl bg-border flex items-center justify-center text-2xl">
                   {form.avatarUrl ? <img src={form.avatarUrl} className="w-full h-full rounded-xl object-cover" alt="" /> : '🤖'}
                 </div>
                 <div>
-                  <div className="font-semibold text-white">{form.nameZh || '智能体名称'}</div>
+                  <div className="font-semibold text-white">{form.nameZh || t('upload.default_name')}</div>
                   <div className="text-xs text-slate-400">{CATEGORY_LABELS[form.category]?.zh}</div>
                 </div>
               </div>

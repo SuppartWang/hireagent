@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Bot } from 'lucide-react'
 
 export function Footer() {
+  const { t } = useTranslation()
   return (
-    <footer className="bg-surface-raised border-t border-surface-border mt-16">
+    <footer className="bg-card border-t border-border mt-16">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -13,8 +15,8 @@ export function Footer() {
             <span className="font-semibold text-white">HireAgent</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-slate-400">
-            <Link to="/marketplace" className="hover:text-white transition-colors">智能体广场</Link>
-            <Link to="/upload" className="hover:text-white transition-colors">发布智能体</Link>
+            <Link to="/marketplace" className="hover:text-white transition-colors">{t('nav.marketplace')}</Link>
+            <Link to="/upload" className="hover:text-white transition-colors">{t('nav.upload')}</Link>
           </div>
           <p className="text-slate-500 text-sm">© 2026 HireAgent. All rights reserved.</p>
         </div>

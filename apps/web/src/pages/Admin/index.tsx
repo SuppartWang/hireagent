@@ -1,50 +1,34 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate } from 'react-router-dom'
 import { BarChart3, RefreshCw, Star, Search, Users, Bot, Download, MessageSquare, Award } from 'lucide-react'
-import { useAuthStore } from '../../store/authStore'
-import { adminApi, agentsApi } from '../../api'
-import { cn } from '../../utils/cn'
-
-interface Stats {
-  published_agents: number
-  draft_agents: number
-  total_users: number
-  total_hires: number
-  hires_today: number
-  total_reviews: number
-  total_points_awarded: number
-}
+import { useAuthStore } from '@/store/authStore'
+import { agentsApi } from '@/api'
+import { cn } from '@/lib/utils'
+import { useAdminStats, useRecalculateRankings, useFeatureAgent } from '@/hooks/use-admin'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { toast } from 'sonner'
 
 export function AdminPage() {
   const { t } = useTranslation()
   const { user } = useAuthStore()
-  const [stats, setStats] = useState<Stats | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [recalculating, setRecalculating] = useState(false)
+  const { data: stats, isLoading } = useAdminStats()
+  const { mutateAsync: recalculate, isPending: recalculating } = useRecalculateRankings()
+  const { mutateAsync: toggleFeature } = useFeatureAgent()
   const [searchQ, setSearchQ] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [searching, setSearching] = useState(false)
 
   if (!user?.isAdmin) return <Navigate to="/" replace />
 
-  useEffect(() => {
-    adminApi.stats()
-      .then(res => setStats(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
-
   const handleRecalculate = async () => {
-    setRecalculating(true)
     try {
-      await adminApi.recalculateRankings()
-      alert(t('admin.recalculate_success'))
-    } catch (err) {
-      console.error(err)
-      alert(t('common.error'))
-    } finally {
-      setRecalculating(false)
+      await recalculate()
+      toast.success(t('admin.recalculate_success'))
+    } catch {
+      toast.error(t('common.error'))
     }
   }
 
@@ -61,40 +45,40 @@ export function AdminPage() {
     }
   }
 
-  const toggleFeature = async (id: string, current: boolean) => {
+  const onToggleFeature = async (id: string, current: boolean) => {
     try {
-      await adminApi.featureAgent(id, !current)
-      setSearchResults(prev => prev.map(a => a.id === id ? { ...a, is_featured: !current } : a))
-    } catch (err) {
-      console.error(err)
-      alert(t('common.error'))
+      await toggleFeature({ id, featured: !current })
+      setSearchResults(prev => prev.map((a: any) => a.id === id ? { ...a, isFeatured: !current } : a))
+      toast.success(t('common.success'))
+    } catch {
+      toast.error(t('common.error'))
     }
   }
 
   const statCards = stats ? [
-    { label: t('admin.published'), value: stats.published_agents, icon: Bot },
-    { label: t('admin.drafts'), value: stats.draft_agents, icon: Bot },
-    { label: t('admin.users'), value: stats.total_users, icon: Users },
-    { label: t('admin.hires'), value: stats.total_hires, icon: Download },
-    { label: t('admin.hires_today'), value: stats.hires_today, icon: Download },
-    { label: t('admin.reviews'), value: stats.total_reviews, icon: MessageSquare },
-    { label: t('admin.points_awarded'), value: stats.total_points_awarded, icon: Award },
+    { label: t('admin.published'), value: stats.publishedAgents, icon: Bot },
+    { label: t('admin.drafts'), value: stats.draftAgents, icon: Bot },
+    { label: t('admin.users'), value: stats.totalUsers, icon: Users },
+    { label: t('admin.hires'), value: stats.totalHires, icon: Download },
+    { label: t('admin.hires_today'), value: stats.hiresToday, icon: Download },
+    { label: t('admin.reviews'), value: stats.totalReviews, icon: MessageSquare },
+    { label: t('admin.points_awarded'), value: stats.totalPointsAwarded, icon: Award },
   ] : []
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-brand-primary/20 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
           <BarChart3 className="w-5 h-5 text-brand-accent" />
         </div>
         <h1 className="text-2xl font-bold text-white">{t('nav.admin')}</h1>
       </div>
 
       {/* Stats */}
-      {loading ? (
+      {isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="card h-24 animate-pulse bg-surface-raised" />
+            <Skeleton key={i} className="h-24" />
           ))}
         </div>
       ) : stats ? (
@@ -112,63 +96,54 @@ export function AdminPage() {
       {/* Actions */}
       <div className="card mb-8">
         <h2 className="text-lg font-semibold text-white mb-4">{t('admin.actions')}</h2>
-        <button
-          onClick={handleRecalculate}
-          disabled={recalculating}
-          className="btn-primary flex items-center gap-2"
-        >
+        <Button onClick={handleRecalculate} disabled={recalculating} className="flex items-center gap-2">
           <RefreshCw className={cn('w-4 h-4', recalculating && 'animate-spin')} />
           {recalculating ? t('common.loading') : t('admin.recalculate_rankings')}
-        </button>
+        </Button>
       </div>
 
       {/* Feature Management */}
       <div className="card">
         <h2 className="text-lg font-semibold text-white mb-4">{t('admin.feature_management')}</h2>
         <div className="flex gap-2 mb-4">
-          <input
-            type="text"
+          <Input
             value={searchQ}
             onChange={e => setSearchQ(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
             placeholder={t('admin.search_agent')}
-            className="input flex-1"
+            className="flex-1"
           />
-          <button
-            onClick={handleSearch}
-            disabled={searching}
-            className="btn-primary flex items-center gap-1"
-          >
-            <Search className="w-4 h-4" />
+          <Button onClick={handleSearch} disabled={searching}>
+            <Search className="w-4 h-4 mr-1" />
             {t('common.search')}
-          </button>
+          </Button>
         </div>
 
         {searchResults.length > 0 && (
           <div className="space-y-2">
-            {searchResults.map(a => (
-              <div key={a.id} className="flex items-center justify-between p-3 bg-surface-overlay rounded-lg">
+            {searchResults.map((a: any) => (
+              <div key={a.id} className="flex items-center justify-between p-3 bg-secondary rounded-lg">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-surface-border flex items-center justify-center text-lg">
-                    {a.name_zh?.[0] || '🤖'}
+                  <div className="w-10 h-10 rounded-xl bg-border flex items-center justify-center text-lg">
+                    {a.nameZh?.[0] || '🤖'}
                   </div>
                   <div>
-                    <div className="font-medium text-white">{a.name_zh}</div>
-                    <div className="text-xs text-slate-500">@{a.creator_username || '—'}</div>
+                    <div className="font-medium text-white">{a.nameZh}</div>
+                    <div className="text-xs text-slate-500">@{a.creatorUsername || '—'}</div>
                   </div>
                 </div>
-                <button
-                  onClick={() => toggleFeature(a.id, a.is_featured)}
+                <Button
+                  variant={a.isFeatured ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => onToggleFeature(a.id, a.isFeatured)}
                   className={cn(
-                    'flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                    a.is_featured
-                      ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30'
-                      : 'bg-surface-border text-slate-300 hover:bg-surface-border/80'
+                    'flex items-center gap-1',
+                    a.isFeatured && 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border-yellow-500/30'
                   )}
                 >
-                  <Star className={cn('w-4 h-4', a.is_featured && 'fill-yellow-300')} />
-                  {a.is_featured ? t('admin.unfeature') : t('admin.feature')}
-                </button>
+                  <Star className={cn('w-4 h-4', a.isFeatured && 'fill-yellow-300')} />
+                  {a.isFeatured ? t('admin.unfeature') : t('admin.feature')}
+                </Button>
               </div>
             ))}
           </div>

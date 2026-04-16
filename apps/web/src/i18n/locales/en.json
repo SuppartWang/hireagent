@@ -17,7 +17,8 @@
     "stats_users": "Creators",
     "stats_hires": "Hires",
     "featured": "Featured",
-    "trending": "Trending This Week"
+    "trending": "Trending This Week",
+    "view_all": "View All"
   },
   "marketplace": {
     "title": "Agent Marketplace",
@@ -33,7 +34,8 @@
     "view_grid": "Grid",
     "view_list": "List",
     "no_results": "No agents found",
-    "load_more": "Load More"
+    "load_more": "Load More",
+    "total_agents": "{{count}} agents"
   },
   "agent": {
     "hire_count": "{{count}} hires",
@@ -73,6 +75,9 @@
     "review_comment": "Comment (optional)",
     "submit_review": "Submit Review",
     "related": "Related Agents",
+    "featured": "Featured",
+    "collapse": "Collapse",
+    "expand_all": "Expand All",
     "inherited_from": "Inherited from"
   },
   "upload": {
@@ -103,7 +108,11 @@
     "next": "Next",
     "prev": "Back",
     "preview": "Preview",
-    "required_field": "This field is required"
+    "required_field": "This field is required",
+    "prompt_language": "Prompt Language",
+    "json_error": "Invalid JSON",
+    "mcp_skip_hint": "Skip this step if no MCP config is needed",
+    "default_name": "Agent Name"
   },
   "profile": {
     "my_agents": "My Agents",
@@ -115,6 +124,8 @@
     "next_badge": "{{points}} points to next tier",
     "create_agent": "Publish New Agent",
     "no_agents": "No agents published yet",
+    "no_points": "No points history",
+    "no_bookmarks": "No bookmarks",
     "edit": "Edit",
     "delete": "Delete",
     "unpublish": "Unpublish"
