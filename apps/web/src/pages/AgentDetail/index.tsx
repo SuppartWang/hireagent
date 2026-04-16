@@ -1,281 +1,202 @@
-import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Star, Download, Copy, ExternalLink, Tag, Cpu, Globe, ChevronDown, ChevronUp } from 'lucide-react'
-import { Agent, CATEGORY_LABELS, CAPABILITY_LABELS } from '@hireagent/shared'
+import { ArrowLeft, Star, Download, Heart, Share2, Bot, Calendar, User, ExternalLink, Loader2 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useAgent, useHireAgent } from '@/hooks/use-agents'
 import { useUIStore } from '@/store/uiStore'
 import { useAuthStore } from '@/store/authStore'
-import { useAgent, useHireAgent } from '@/hooks/use-agents'
-import { useReviews, useCreateReview } from '@/hooks/use-reviews'
 import { cn } from '@/lib/utils'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+
+const categoryColors: Record<string, string> = {
+  'coding': 'border-cyan-400/30 text-cyan-300 bg-cyan-500/10',
+  'writing': 'border-rose-400/30 text-rose-300 bg-rose-500/10',
+  'research': 'border-blue-400/30 text-blue-300 bg-blue-500/10',
+  'data_analysis': 'border-emerald-400/30 text-emerald-300 bg-emerald-500/10',
+  'customer_service': 'border-amber-400/30 text-amber-300 bg-amber-500/10',
+  'education': 'border-violet-400/30 text-violet-300 bg-violet-500/10',
+  'creative': 'border-purple-400/30 text-purple-300 bg-purple-500/10',
+  'productivity': 'border-orange-400/30 text-orange-300 bg-orange-500/10',
+  'legal': 'border-slate-400/30 text-slate-300 bg-slate-500/10',
+  'finance': 'border-teal-400/30 text-teal-300 bg-teal-500/10',
+  'other': 'border-slate-400/30 text-slate-300 bg-slate-500/10',
+}
 
 export function AgentDetailPage() {
   const { slug } = useParams<{ slug: string }>()
+  const navigate = useNavigate()
   const { t, i18n } = useTranslation()
-  const { openExportModal } = useUIStore()
   const { user } = useAuthStore()
+  const { openExportModal } = useUIStore()
   const { data: agent, isLoading } = useAgent(slug || '')
-  const { data: reviews = [] } = useReviews(agent?.id || '')
-  const { mutateAsync: hire } = useHireAgent()
-  const { mutateAsync: submitReview, isPending: submittingReview } = useCreateReview()
-  const [promptExpanded, setPromptExpanded] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const [rating, setRating] = useState(0)
-  const [comment, setComment] = useState('')
+  const hireMutation = useHireAgent()
 
-  const lang = i18n.language
-
-  const handleCopyPrompt = async () => {
-    if (!agent) return
-    await navigator.clipboard.writeText(agent.systemPrompt)
-    setCopied(true)
-    hire({ id: agent.id, hireType: 'copy_prompt' }).catch(console.error)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  const handleSubmitReview = async () => {
-    if (!agent || !rating) return
-    try {
-      await submitReview({
-        agentId: agent.id,
-        payload: {
-          rating,
-          commentZh: lang === 'zh-CN' ? comment : undefined,
-          commentEn: lang === 'en' ? comment : undefined,
-        },
-      })
-      setRating(0)
-      setComment('')
-      toast.success(t('common.success'))
-    } catch {
-      toast.error(t('common.error'))
-    }
-  }
+  const isZh = i18n.language.startsWith('zh')
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-1/2" />
-          <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-32" />
-        </div>
+      <div className="px-4 py-8 max-w-5xl mx-auto">
+        <Skeleton className="h-8 w-32 mb-6" />
+        <Skeleton className="h-64 rounded-2xl mb-6" />
+        <Skeleton className="h-40 rounded-2xl" />
       </div>
     )
   }
 
   if (!agent) {
     return (
-      <div className="text-center py-20 text-slate-400">
-        <p className="text-lg">{t('common.not_found')}</p>
-        <Link to="/marketplace" className="btn-primary mt-4 inline-block">{t('common.go_home')}</Link>
+      <div className="px-4 py-16 text-center max-w-xl mx-auto">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/[0.04] flex items-center justify-center">
+          <Bot className="w-8 h-8 text-slate-500" />
+        </div>
+        <h2 className="text-xl font-semibold text-white mb-2">{t('agent.not_found')}</h2>
+        <p className="text-slate-500 mb-6">{t('agent.try_again')}</p>
+        <Button onClick={() => navigate('/marketplace')} className="rounded-full px-6">{t('agent.back_marketplace')}</Button>
       </div>
     )
   }
 
-  const name = lang === 'zh-CN' ? agent.nameZh : (agent.nameEn || agent.nameZh)
-  const description = lang === 'zh-CN' ? agent.descriptionZh : (agent.descriptionEn || agent.descriptionZh)
-  const categoryLabel = CATEGORY_LABELS[agent.category]
+  const categoryLabel = agent.category || 'other'
+  const categoryStyle = categoryColors[categoryLabel] || categoryColors.other
+  const avg = Number(agent.ratingAvg || 0).toFixed(1)
+  const name = isZh ? agent.nameZh : (agent.nameEn || agent.nameZh)
+  const description = isZh ? agent.descriptionZh : (agent.descriptionEn || agent.descriptionZh)
+  const tagline = isZh ? agent.taglineZh : (agent.taglineEn || agent.taglineZh)
+
+  const handleHire = async () => {
+    try {
+      await hireMutation.mutateAsync({ id: agent.id, hireType: 'try' })
+      toast.success(t('agent.hire_success'))
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || t('agent.hire_error'))
+    }
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="card mb-6">
-        <div className="flex items-start gap-4">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-secondary to-card border border-border flex items-center justify-center text-4xl flex-shrink-0 shadow-inner">
-            {agent.avatarUrl
-              ? <img src={agent.avatarUrl} alt={name} className="w-full h-full rounded-2xl object-cover" />
-              : <span className="opacity-90">{agent.nameZh?.[0] || '🤖'}</span>}
-          </div>
-          <div className="flex-1">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <h1 className="text-2xl font-bold text-white">{name}</h1>
-              {agent.isFeatured && <span className="badge bg-yellow-500/15 text-yellow-300 border border-yellow-500/30">{t('agent.featured')}</span>}
-              <span className="badge bg-secondary text-slate-400">v{agent.version}</span>
+    <div className="relative min-h-[calc(100vh-4rem)] px-4 py-8">
+      {/* ambient aurora */}
+      <div className="absolute top-[-10%] left-1/3 w-[600px] h-[500px] bg-brand-primary/10 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="max-w-5xl mx-auto relative z-10">
+        <button onClick={() => navigate(-1)} className="group inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6">
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          {t('common.back')}
+        </button>
+
+        {/* Header card */}
+        <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md p-6 md:p-8 mb-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-primary/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col md:flex-row gap-6 md:items-start">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center text-white text-3xl font-bold shadow-xl shadow-brand-primary/20 ring-1 ring-white/10">
+              {name.slice(0, 2).toUpperCase()}
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400 mb-3">
-              <span className="badge bg-blue-500/15 text-blue-300 border border-blue-500/20">
-                {lang === 'zh-CN' ? categoryLabel.zh : categoryLabel.en}
-              </span>
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                <span className="text-white font-medium">{Number(agent.ratingAvg || 0).toFixed(1) || '–'}</span>
-                <span>({agent.ratingCount} {t('agent.reviews')})</span>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <Badge variant="outline" className={cn('text-xs font-medium rounded-full px-3 py-1 border', categoryStyle)}>
+                  {categoryLabel}
+                </Badge>
+                {agent.isFeatured && (
+                  <Badge className="rounded-full text-[11px] font-medium border border-yellow-400/40 bg-yellow-500/15 text-yellow-300 shadow-[0_0_10px_rgba(250,204,21,0.25)]">
+                    <Star className="w-3 h-3 mr-1 fill-yellow-400 text-yellow-400" />
+                    精选
+                  </Badge>
+                )}
               </div>
-              <div className="flex items-center gap-1">
-                <Download className="w-4 h-4" />
-                <span>{t('agent.hire_count', { count: agent.hireCount })}</span>
+
+              <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">{name}</h1>
+              <p className="text-slate-400 leading-relaxed max-w-2xl">{tagline || description}</p>
+
+              <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                <span className="flex items-center gap-1.5">
+                  <User className="w-4 h-4" />
+                  {agent.creatorDisplayName || agent.creatorUsername || '官方'}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4" />
+                  {agent.createdAt ? new Date(agent.createdAt).toLocaleDateString() : '-'}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                  {avg} ({agent.ratingCount || 0} 评价)
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Download className="w-4 h-4 text-brand-accent" />
+                  {agent.hireCount || 0} {t('agent.hires')}
+                </span>
               </div>
-              {agent.creatorUsername && (
-                <span>by <Link to={`/users/${agent.creatorUsername}`} className="text-brand-accent hover:underline">{agent.creatorDisplayName || agent.creatorUsername}</Link></span>
-              )}
             </div>
-            <p className="text-slate-300">{description}</p>
+
+            <div className="flex md:flex-col gap-2 md:min-w-[10rem]">
+              <Button
+                className="flex-1 rounded-full bg-gradient-to-r from-brand-primary to-blue-500 text-white hover:from-blue-500 hover:to-brand-primary shadow-lg shadow-brand-primary/20"
+                onClick={handleHire}
+                disabled={hireMutation.isPending}
+              >
+                {hireMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t('agent.try_now')}
+              </Button>
+              <Button variant="outline" className="rounded-full border-white/10 hover:bg-white/[0.06]" onClick={() => openExportModal(agent.id, name)}>
+                <Share2 className="w-4 h-4 mr-2" />
+                {t('agent.share')}
+              </Button>
+              <Button variant="outline" className="rounded-full border-white/10 hover:bg-white/[0.06]">
+                <Heart className="w-4 h-4 mr-2" />
+                {t('agent.favorite')}
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Export actions */}
-        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
-          <Button onClick={() => openExportModal(agent.id, name)}>
-            <Download className="w-4 h-4 mr-1" />
-            {t('agent.hire_now')}
-          </Button>
-          <Button variant="secondary" onClick={handleCopyPrompt}>
-            <Copy className="w-4 h-4 mr-1" />
-            {copied ? t('agent.copy_success') : t('agent.copy_prompt')}
-          </Button>
-          <Button variant="secondary" asChild>
-            <Link to={`/try/${agent.slug}`}>
-              <ExternalLink className="w-4 h-4 mr-1" />
-              {t('agent.try_agent')}
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Main content */}
-        <div className="md:col-span-2 space-y-6">
-          {/* System Prompt */}
-          <div className="card">
-            <h2 className="font-semibold text-white mb-3 flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-brand-accent" />
-              {t('agent.system_prompt')}
-            </h2>
-            <div className={cn('relative', !promptExpanded && 'max-h-32 overflow-hidden')}>
-              <pre className="text-slate-300 text-sm whitespace-pre-wrap font-sans bg-secondary rounded-lg p-3">
-                {agent.systemPrompt}
-              </pre>
-              {!promptExpanded && (
-                <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent" />
-              )}
-            </div>
-            <button
-              onClick={() => setPromptExpanded(!promptExpanded)}
-              className="flex items-center gap-1 text-brand-accent text-sm mt-2 hover:underline"
-            >
-              {promptExpanded ? <><ChevronUp className="w-4 h-4" />{t('agent.collapse')}</> : <><ChevronDown className="w-4 h-4" />{t('agent.expand_all')}</>}
-            </button>
-          </div>
-
-          {/* MCP Config */}
-          {agent.mcpConfig && (
-            <div className="card">
-              <h2 className="font-semibold text-white mb-3">{t('agent.mcp_config')}</h2>
-              <pre className="text-slate-300 text-sm bg-secondary rounded-lg p-3 overflow-x-auto">
-                {JSON.stringify(agent.mcpConfig, null, 2)}
-              </pre>
-            </div>
-          )}
-
-          {/* Reviews */}
-          <div className="card">
-            <h2 className="font-semibold text-white mb-4">{t('agent.reviews')}</h2>
-            {user && (
-              <div className="mb-6 p-4 bg-secondary rounded-lg">
-                <p className="text-sm text-slate-300 mb-2">{t('agent.your_rating')}</p>
-                <div className="flex gap-1 mb-3">
-                  {[1,2,3,4,5].map(s => (
-                    <button key={s} onClick={() => setRating(s)}>
-                      <Star className={cn('w-6 h-6', s <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600')} />
-                    </button>
-                  ))}
-                </div>
-                <textarea
-                  value={comment}
-                  onChange={e => setComment(e.target.value)}
-                  placeholder={t('agent.review_comment')}
-                  className="input w-full resize-none h-20 mb-3"
-                />
-                <Button onClick={handleSubmitReview} disabled={!rating || submittingReview}>
-                  {t('agent.submit_review')}
-                </Button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main content */}
+          <div className="lg:col-span-2 space-y-6">
+            {agent.coverUrl && (
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+                <img src={agent.coverUrl} alt={name} className="w-full object-cover" />
               </div>
             )}
-            {reviews.length === 0 ? (
-              <p className="text-slate-500 text-sm">{t('agent.no_reviews')}</p>
-            ) : (
-              <div className="space-y-4">
-                {reviews.map((r: any) => (
-                  <div key={r.id} className="border-b border-border pb-4 last:border-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-white text-sm">{r.display_name || r.username}</span>
-                      <div className="flex">
-                        {[1,2,3,4,5].map(s => (
-                          <Star key={s} className={cn('w-3.5 h-3.5', s <= r.rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600')} />
-                        ))}
-                      </div>
-                    </div>
-                    {(r.comment_zh || r.comment_en) && (
-                      <p className="text-slate-400 text-sm">{lang === 'zh-CN' ? r.comment_zh : r.comment_en}</p>
-                    )}
-                  </div>
+
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-sm">
+              <h3 className="text-lg font-semibold text-white mb-4">{t('agent.overview')}</h3>
+              <div className="prose prose-invert max-w-none text-slate-400 leading-relaxed">
+                {(description || '暂无描述').split('\n').map((p: string, idx: number) => (
+                  <p key={idx} className="mb-4 last:mb-0">{p}</p>
                 ))}
               </div>
+            </div>
+
+            {agent.capabilities && agent.capabilities.length > 0 && (
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-sm">
+                <h3 className="text-lg font-semibold text-white mb-4">{t('agent.features')}</h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {agent.capabilities.map((cap: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-3 text-slate-400">
+                      <span className="mt-1 w-1.5 h-1.5 rounded-full bg-brand-accent shadow-[0_0_6px_rgba(34,211,238,0.6)]" />
+                      {cap}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
-        </div>
 
-        {/* Sidebar */}
-        <div className="space-y-4">
-          {/* Capabilities */}
-          {agent.capabilities?.length > 0 && (
-            <div className="card">
-              <h3 className="font-medium text-white mb-3 text-sm flex items-center gap-1.5">
-                <Cpu className="w-4 h-4" />{t('agent.capabilities')}
-              </h3>
-              <div className="flex flex-wrap gap-1.5">
-                {agent.capabilities.map(cap => (
-                  <span key={cap} className="badge bg-brand-secondary/20 text-purple-300 text-xs">
-                    {lang === 'zh-CN' ? CAPABILITY_LABELS[cap]?.zh : CAPABILITY_LABELS[cap]?.en}
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 backdrop-blur-sm">
+              <h4 className="text-sm font-semibold text-white mb-4">{t('agent.tags')}</h4>
+              <div className="flex flex-wrap gap-2">
+                {(agent.tags || []).map((tag: string) => (
+                  <span key={tag} className="px-2.5 py-1 rounded-full text-xs border border-white/10 bg-white/[0.04] text-slate-300 hover:border-white/20 hover:text-white transition-colors cursor-default">
+                    #{tag}
                   </span>
                 ))}
+                {(agent.tags || []).length === 0 && <span className="text-sm text-slate-500">-</span>}
               </div>
             </div>
-          )}
-
-          {/* Tags */}
-          {agent.tags?.length > 0 && (
-            <div className="card">
-              <h3 className="font-medium text-white mb-3 text-sm flex items-center gap-1.5">
-                <Tag className="w-4 h-4" />{t('agent.tags')}
-              </h3>
-              <div className="flex flex-wrap gap-1.5">
-                {agent.tags.map(tag => (
-                  <span key={tag} className="badge bg-secondary text-slate-400 text-xs">{tag}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Languages */}
-          {agent.languageSupport?.length > 0 && (
-            <div className="card">
-              <h3 className="font-medium text-white mb-3 text-sm flex items-center gap-1.5">
-                <Globe className="w-4 h-4" />{t('agent.language_support')}
-              </h3>
-              <div className="flex flex-wrap gap-1.5">
-                {agent.languageSupport.map(l => (
-                  <span key={l} className="badge bg-secondary text-slate-400 text-xs">{l}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Supported Models */}
-          {agent.supportedModels?.length > 0 && (
-            <div className="card">
-              <h3 className="font-medium text-white mb-3 text-sm">{t('agent.supported_models')}</h3>
-              <div className="space-y-1">
-                {agent.supportedModels.map(m => (
-                  <div key={m} className="text-xs text-slate-400 font-mono bg-secondary px-2 py-1 rounded">{m}</div>
-                ))}
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

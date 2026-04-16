@@ -1,101 +1,157 @@
-import { useNavigate, Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { useAuthStore } from '@/store/authStore'
-import { registerSchema, type RegisterFormValues } from '@/lib/schemas'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Eye, EyeOff, Loader2, Bot, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
+import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
+
+const schema = z
+  .object({
+    username: z.string().min(2, '用户名至少2个字符'),
+    email: z.string().email('请输入有效的邮箱地址'),
+    password: z.string().min(6, '密码至少6位'),
+    confirmPassword: z.string().min(1, '请确认密码'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: '两次密码不一致',
+    path: ['confirmPassword'],
+  })
+
+type FormData = z.infer<typeof schema>
 
 export function RegisterPage() {
   const { t } = useTranslation()
-  const { register } = useAuthStore()
   const navigate = useNavigate()
+  const { register: authRegister } = useAuthStore()
+  const [showPwd, setShowPwd] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: { email: '', password: '', username: '', displayName: '' },
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
   })
 
-  const onSubmit = async (values: RegisterFormValues) => {
+  const onSubmit = async (data: FormData) => {
+    setLoading(true)
     try {
-      await register(values.email, values.password, values.username, values.displayName)
+      await authRegister(data.email, data.password, data.username, data.username)
+      toast.success(t('register.success'))
       navigate('/')
-    } catch (err: any) {
-      const msg = err?.response?.data?.error || t('common.error')
-      toast.error(msg)
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || t('register.error'))
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-white mb-6 text-center">{t('auth.register_title')}</h1>
-        <div className="card space-y-4">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('auth.email')}</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="you@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+      {/* aurora orbs */}
+      <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-brand-secondary/12 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-brand-primary/10 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="relative z-10 w-full max-w-md">
+        <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl p-8 shadow-2xl shadow-black/40">
+          <div className="text-center mb-8">
+            <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-brand-secondary to-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-secondary/20 ring-1 ring-white/10">
+              <Bot className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-white">{t('register.title')}</h1>
+            <p className="text-sm text-slate-400 mt-2">{t('register.subtitle')}</p>
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username" className="text-slate-300">{t('register.username')}</Label>
+              <Input
+                id="username"
+                autoComplete="username"
+                placeholder="your_name"
+                className="rounded-xl border-white/10 bg-white/[0.03] text-white placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-brand-accent/20"
+                {...register('username')}
               />
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('auth.username')}</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              {errors.username && <p className="text-xs text-red-400">{errors.username.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-slate-300">{t('register.email')}</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                className="rounded-xl border-white/10 bg-white/[0.03] text-white placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-brand-accent/20"
+                {...register('email')}
               />
-              <FormField
-                control={form.control}
-                name="displayName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('auth.display_name')}</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              {errors.email && <p className="text-xs text-red-400">{errors.email.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-slate-300">{t('register.password')}</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPwd ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  placeholder="••••••••"
+                  className="rounded-xl border-white/10 bg-white/[0.03] text-white placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-brand-accent/20 pr-10"
+                  {...register('password')}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  onClick={() => setShowPwd((v) => !v)}
+                >
+                  {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {errors.password && <p className="text-xs text-red-400">{errors.password.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-slate-300">{t('register.confirm_password')}</Label>
+              <Input
+                id="confirmPassword"
+                type={showPwd ? 'text' : 'password'}
+                autoComplete="new-password"
+                placeholder="••••••••"
+                className="rounded-xl border-white/10 bg-white/[0.03] text-white placeholder:text-slate-600 focus:border-brand-accent/50 focus:ring-brand-accent/20"
+                {...register('confirmPassword')}
               />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('auth.password')}</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? t('common.loading') : t('auth.register_btn')}
-              </Button>
-            </form>
-          </Form>
-          <p className="text-center text-sm text-slate-400">
-            <Link to="/login" className="text-brand-accent hover:underline">{t('auth.has_account')}</Link>
-          </p>
+              {errors.confirmPassword && <p className="text-xs text-red-400">{errors.confirmPassword.message}</p>}
+            </div>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-full bg-gradient-to-r from-brand-secondary to-brand-primary text-white hover:from-brand-primary hover:to-brand-secondary shadow-lg shadow-brand-secondary/20 transition-all mt-2"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  {t('register.submit')}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              )}
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center text-sm text-slate-500">
+            {t('register.have_account')}{' '}
+            <Link to="/login" className="text-brand-accent hover:text-brand-accent/80 font-medium">
+              {t('register.login')}
+            </Link>
+          </div>
         </div>
       </div>
     </div>

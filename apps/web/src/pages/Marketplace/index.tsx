@@ -1,198 +1,138 @@
 import { useState, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Search, Grid, List, SlidersHorizontal } from 'lucide-react'
-import { AgentCategory, AgentCapability, SortOption, CATEGORY_LABELS, CAPABILITY_LABELS } from '@hireagent/shared'
+import { Search, SlidersHorizontal, Grid3X3, LayoutList, Loader2 } from 'lucide-react'
 import { AgentCard } from '@/components/agent/AgentCard'
-import { useUIStore } from '@/store/uiStore'
-import { useAgents } from '@/hooks/use-agents'
-import { cn } from '@/lib/utils'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useAgents } from '@/hooks/use-agents'
+import { useUIStore } from '@/store/uiStore'
+import { cn } from '@/lib/utils'
+import { useDebounce } from '@/hooks/use-debounce'
+import type { SortOption } from '@hireagent/shared'
 
-const SORT_OPTIONS: SortOption[] = ['ranking', 'newest', 'rating', 'usage', 'trending']
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: 'newest', label: 'marketplace.sort_latest' },
+  { value: 'ranking', label: 'marketplace.sort_ranking' },
+  { value: 'trending', label: 'marketplace.sort_trending' },
+]
 
 export function MarketplacePage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { viewMode, setViewMode } = useUIStore()
-  const [page, setPage] = useState(1)
-  const [filterOpen, setFilterOpen] = useState(false)
+  const { openExportModal } = useUIStore()
+  const [view, setView] = useState<'grid' | 'list'>('grid')
+  const [q, setQ] = useState(searchParams.get('q') || '')
+  const debouncedQ = useDebounce(q, 300)
 
-  const sort = (searchParams.get('sort') || 'ranking') as SortOption
-  const category = searchParams.get('category') || 'all'
-  const capsParam = searchParams.get('capabilities') || ''
-  const selectedCapabilities = capsParam ? capsParam.split(',') : []
-  const q = searchParams.get('q') || ''
-  const [searchInput, setSearchInput] = useState(q)
+  const sort = (searchParams.get('sort') as SortOption) || 'newest'
+  const category = searchParams.get('category') || undefined
 
-  const filters = {
+  const { data: response, isLoading } = useAgents({
+    search: debouncedQ || undefined,
     sort,
-    category: category !== 'all' ? category as AgentCategory : undefined,
-    capabilities: selectedCapabilities.length ? selectedCapabilities as AgentCapability[] : undefined,
-    search: q || undefined,
-    page,
+    category: category as any,
+    page: 1,
     limit: 20,
-  }
+  })
 
-  const { data, isLoading, isFetching } = useAgents(filters)
-  const agents = data?.data || []
-  const total = data?.total || 0
+  const agents = response?.data || []
 
-  const updateParam = useCallback((key: string, value: string) => {
-    const p = new URLSearchParams(searchParams)
-    value ? p.set(key, value) : p.delete(key)
-    p.delete('page')
-    setSearchParams(p)
-    setPage(1)
-  }, [searchParams, setSearchParams])
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    updateParam('q', searchInput)
-  }
-
-  const loadMore = () => setPage(p => p + 1)
-
-  const showSkeleton = isLoading && agents.length === 0
+  const updateParam = useCallback(
+    (key: string, value: string) => {
+      const next = new URLSearchParams(searchParams)
+      if (value) next.set(key, value)
+      else next.delete(key)
+      setSearchParams(next)
+    },
+    [searchParams, setSearchParams]
+  )
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white mb-4">{t('marketplace.title')}</h1>
+    <div className="relative min-h-[calc(100vh-4rem)] px-4 py-8">
+      {/* subtle aurora background */}
+      <div className="absolute top-0 left-1/4 w-[600px] h-[400px] bg-brand-primary/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[400px] bg-brand-secondary/8 rounded-full blur-[100px] pointer-events-none" />
 
-        {/* Search + toolbar */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <form onSubmit={handleSearch} className="flex-1 flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="text"
-                value={searchInput}
-                onChange={e => setSearchInput(e.target.value)}
-                placeholder={t('marketplace.search_placeholder')}
-                className="w-full pl-9"
-              />
-            </div>
-            <Button type="submit">{t('common.search')}</Button>
-          </form>
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold glow-text mb-3">{t('marketplace.title')}</h1>
+          <p className="text-slate-400 max-w-xl mx-auto">{t('marketplace.subtitle')}</p>
+        </div>
 
-          <div className="flex gap-2">
+        {/* Filters */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6 items-stretch md:items-center">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={t('marketplace.search_placeholder')}
+              className="pl-10 rounded-full border-white/10 bg-white/[0.03] text-white placeholder:text-slate-500 focus:border-brand-accent/50 focus:ring-brand-accent/20"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+            {sortOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => updateParam('sort', opt.value)}
+                className={cn(
+                  'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all',
+                  sort === opt.value
+                    ? 'text-white bg-white/[0.08] border border-white/10'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                )}
+              >
+                {t(opt.label)}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 ml-auto">
             <Button
-              variant="outline"
-              onClick={() => setFilterOpen(!filterOpen)}
-              className={cn('flex items-center gap-1.5', filterOpen && 'border-primary text-primary')}
+              size="icon"
+              variant={view === 'grid' ? 'default' : 'outline'}
+              className={cn('rounded-full', view === 'grid' ? 'bg-white/10 text-white' : 'border-white/10 text-slate-400')}
+              onClick={() => setView('grid')}
             >
-              <SlidersHorizontal className="w-4 h-4" />
-              <span className="hidden sm:inline">{t('marketplace.filter_category')}</span>
+              <Grid3X3 className="w-4 h-4" />
             </Button>
-            <div className="flex border border-border rounded-lg overflow-hidden">
-              <button onClick={() => setViewMode('grid')} className={cn('p-2', viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-slate-400 hover:text-white')}>
-                <Grid className="w-4 h-4" />
-              </button>
-              <button onClick={() => setViewMode('list')} className={cn('p-2', viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-slate-400 hover:text-white')}>
-                <List className="w-4 h-4" />
-              </button>
-            </div>
+            <Button
+              size="icon"
+              variant={view === 'list' ? 'default' : 'outline'}
+              className={cn('rounded-full', view === 'list' ? 'bg-white/10 text-white' : 'border-white/10 text-slate-400')}
+              onClick={() => setView('list')}
+            >
+              <LayoutList className="w-4 h-4" />
+            </Button>
           </div>
         </div>
 
-        {/* Sort tabs */}
-        <div className="flex gap-1 mt-3 overflow-x-auto pb-1">
-          {SORT_OPTIONS.map(s => (
-            <button
-              key={s}
-              onClick={() => updateParam('sort', s)}
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors',
-                sort === s ? 'bg-primary text-primary-foreground' : 'text-slate-400 hover:text-white hover:bg-secondary'
-              )}
-            >
-              {t(`marketplace.sort_${s}`)}
-            </button>
-          ))}
-        </div>
-
-        {/* Category filter */}
-        {filterOpen && (
-          <div className="mt-3 p-4 card space-y-4">
-            <div>
-              <p className="text-sm font-medium text-slate-300 mb-2">{t('marketplace.filter_category')}</p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => updateParam('category', '')}
-                  className={cn('badge cursor-pointer', category === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-slate-400 hover:text-white')}
-                >
-                  {t('marketplace.all_categories')}
-                </button>
-                {Object.entries(CATEGORY_LABELS).map(([key, labels]) => (
-                  <button
-                    key={key}
-                    onClick={() => updateParam('category', key)}
-                    className={cn('badge cursor-pointer', category === key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-slate-400 hover:text-white')}
-                  >
-                    {i18n.language === 'zh-CN' ? labels.zh : labels.en}
-                  </button>
-                ))}
-              </div>
+        {/* Results */}
+        {isLoading ? (
+          <div className={cn('grid gap-4', view === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-56 rounded-2xl" />
+            ))}
+          </div>
+        ) : agents.length > 0 ? (
+          <div className={cn('grid gap-4', view === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}>
+            {agents.map((agent) => (
+              <AgentCard key={agent.id} agent={agent} compact={view === 'grid'} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-24 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/[0.04] flex items-center justify-center">
+              <SlidersHorizontal className="w-7 h-7 text-slate-500" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-slate-300 mb-2">{t('marketplace.filter_capability')}</p>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(CAPABILITY_LABELS).map(([key, labels]) => {
-                  const active = selectedCapabilities.includes(key)
-                  const next = active
-                    ? selectedCapabilities.filter(c => c !== key)
-                    : [...selectedCapabilities, key]
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => updateParam('capabilities', next.join(','))}
-                      className={cn('badge cursor-pointer', active ? 'bg-brand-secondary text-white' : 'bg-secondary text-slate-400 hover:text-white')}
-                    >
-                      {i18n.language === 'zh-CN' ? labels.zh : labels.en}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+            <h3 className="text-lg font-semibold text-white mb-1">{t('marketplace.no_results')}</h3>
+            <p className="text-slate-500">{t('marketplace.try_adjust')}</p>
           </div>
         )}
       </div>
-
-      {/* Results */}
-      {showSkeleton ? (
-        <div className={cn('gap-4', viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'flex flex-col')}>
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-64" />
-          ))}
-        </div>
-      ) : agents.length === 0 ? (
-        <div className="text-center py-16 text-slate-400">
-          <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>{t('marketplace.no_results')}</p>
-        </div>
-      ) : (
-        <>
-          <p className="text-sm text-slate-500 mb-4">{t('marketplace.total_agents', { count: total })}</p>
-          <div className={cn(
-            'gap-4',
-            viewMode === 'grid'
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-              : 'flex flex-col'
-          )}>
-            {agents.map(agent => <AgentCard key={agent.id} agent={agent} compact={viewMode === 'list'} />)}
-          </div>
-          {agents.length < total && (
-            <div className="mt-8 text-center">
-              <Button variant="secondary" onClick={loadMore} disabled={isFetching}>
-                {isFetching ? t('common.loading') : t('marketplace.load_more')}
-              </Button>
-            </div>
-          )}
-        </>
-      )}
     </div>
   )
 }

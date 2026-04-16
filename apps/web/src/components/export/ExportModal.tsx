@@ -83,26 +83,34 @@ export function ExportModal({ agentId, agentName, onClose }: ExportModalProps) {
   ]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-surface-raised border border-surface-border rounded-2xl w-full max-w-lg shadow-2xl animate-slide-up" onClick={e => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-lg rounded-3xl border border-white/[0.08] bg-[#0b1120]/95 backdrop-blur-xl shadow-2xl animate-slide-up overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="absolute top-0 right-0 w-40 h-40 bg-brand-primary/10 rounded-full blur-3xl pointer-events-none" />
+
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-surface-border">
+        <div className="relative z-10 flex items-center justify-between p-5 border-b border-white/[0.06]">
           <h2 className="font-semibold text-white">{t('export.title')}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors p-1 rounded-full hover:bg-white/[0.04]">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-surface-border px-5">
+        <div className="relative z-10 flex border-b border-white/[0.06] px-5 overflow-x-auto">
           {tabs.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => setTab(key)}
               className={cn(
-                'py-3 px-3 text-sm font-medium border-b-2 -mb-px transition-colors',
+                'py-3 px-3 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap',
                 tab === key
-                  ? 'border-brand-primary text-brand-accent'
+                  ? 'border-brand-accent text-white'
                   : 'border-transparent text-slate-400 hover:text-white'
               )}
             >
@@ -112,14 +120,14 @@ export function ExportModal({ agentId, agentName, onClose }: ExportModalProps) {
         </div>
 
         {/* Content */}
-        <div className="p-5">
+        <div className="relative z-10 p-5">
           {tab === 'claude' && (
             <div>
               <p className="text-sm text-slate-400 mb-3">{t('export.claude_desc')}</p>
-              <div className="bg-surface-overlay rounded-lg p-3 text-xs font-mono text-slate-300 mb-3">
+              <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3 text-xs font-mono text-slate-300 mb-3">
                 {`{\n  "mcpServers": { ... }\n}`}
               </div>
-              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-4">
+              <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/10 p-3 mb-4">
                 <p className="text-xs text-yellow-300">⚠️ {t('export.claude_note')}</p>
               </div>
             </div>
@@ -128,7 +136,7 @@ export function ExportModal({ agentId, agentName, onClose }: ExportModalProps) {
           {tab === 'openclaw' && (
             <div>
               <p className="text-sm text-slate-400 mb-4">{t('export.openclaw_desc')}</p>
-              <div className="bg-surface-overlay rounded-lg p-3 text-xs font-mono text-slate-300 mb-3">
+              <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3 text-xs font-mono text-slate-300 mb-3">
                 {`{\n  "openclaw_json": { ... },\n  "agent_md": "..."\n}`}
               </div>
             </div>
