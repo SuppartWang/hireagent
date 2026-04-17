@@ -39,3 +39,8 @@ coverage
 .cache
 .temp
 .tmp
+
+# Screenshots from local testing
+screenshot*.png
+
+.playwright-mcp/

@@ -1,0 +1,25 @@
+{
+  "name": "@hireagent/agent-crawler",
+  "version": "1.0.0",
+  "description": "Automated agent discovery and ingestion tool for HireAgent marketplace",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.ts",
+    "crawl": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "axios": "^1.8.4",
+    "dotenv": "^17.3.1",
+    "openai": "^4.96.0",
+    "playwright": "^1.59.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.20",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.2"
+  }
+}
