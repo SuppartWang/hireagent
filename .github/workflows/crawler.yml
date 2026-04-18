@@ -1,0 +1,59 @@
+name: Daily Agent Crawler
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 每天凌晨 2 点 UTC (北京时间 10:00)
+  workflow_dispatch:      # 支持手动触发
+
+jobs:
+  crawl-and-import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: tools/agent-crawler
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run crawler
+        run: pnpm exec tsx src/index.ts --sources=awesome,github
+        env:
+          # LLM Provider (default: fucheers OpenAI-compatible)
+          LLM_PROVIDER: ${{ secrets.CRAWLER_LLM_PROVIDER || 'openai' }}
+          OPENAI_API_KEY: ${{ secrets.CRAWLER_OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.CRAWLER_OPENAI_BASE_URL || 'https://www.fucheers.top/v1' }}
+          OPENAI_MODEL: ${{ secrets.CRAWLER_OPENAI_MODEL || 'claude-opus-4-6' }}
+
+          # Kimi fallback (optional)
+          KIMI_API_KEY: ${{ secrets.CRAWLER_KIMI_API_KEY }}
+          KIMI_BASE_URL: ${{ secrets.CRAWLER_KIMI_BASE_URL || 'https://api.moonshot.cn/v1' }}
+          KIMI_MODEL: ${{ secrets.CRAWLER_KIMI_MODEL || 'moonshot-v1-8k' }}
+
+          # Ollama fallback (optional, for self-hosted runners)
+          OLLAMA_BASE_URL: ${{ secrets.CRAWLER_OLLAMA_BASE_URL || 'http://localhost:11434/v1' }}
+          OLLAMA_MODEL: ${{ secrets.CRAWLER_OLLAMA_MODEL || 'qwen2.5:7b' }}
+
+          # HireAgent API target
+          HIREAGENT_API_BASE_URL: ${{ secrets.HIREAGENT_API_BASE_URL || 'https://hireagent-api.onrender.com/api/v1' }}
+          HIREAGENT_ADMIN_EMAIL: ${{ secrets.HIREAGENT_ADMIN_EMAIL }}
+          HIREAGENT_ADMIN_PASSWORD: ${{ secrets.HIREAGENT_ADMIN_PASSWORD }}
+
+          # Pipeline config
+          MAX_AGENTS_PER_RUN: ${{ secrets.CRAWLER_MAX_AGENTS_PER_RUN || '5' }}
+          PUBLISH_ON_IMPORT: 'true'
