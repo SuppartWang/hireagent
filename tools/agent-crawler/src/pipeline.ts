@@ -1,18 +1,64 @@
 import { LLMEnricher } from './llm.js';
 import { HireAgentAPI } from './api.js';
-import { searchGitHub, searchWeb, closeBrowser } from './searchers/index.js';
+import {
+  fetchAwesomeLists,
+  searchGitHubRepos,
+  searchProductHunt,
+  fetchAggregators,
+  searchWeb,
+  closeBrowser,
+} from './searchers/index.js';
 import { config } from './config.js';
 import type { RawAgentData, EnrichedAgent } from './types.js';
 
 export interface PipelineOptions {
-  sources?: ('github' | 'web')[];
-  githubQuery?: string;
-  webQuery?: string;
+  sources?: string[];
   dryRun?: boolean;
 }
 
+const JUNK_KEYWORDS = [
+  '核聚变', '人造太阳', 'BEST装置', '合肥', '发电',
+  '邮件礼仪', 'best regards', 'sincerely', 'cheers',
+  '英文信件', '结束语', '信件格式',
+  '天气预报', '彩票', '股票推荐', '赌博',
+  'nude', 'porn', 'adult', 'sex',
+];
+
+const POSITIVE_KEYWORDS = ['agent', 'mcp', 'llm', 'ai', 'assistant', 'bot', 'copilot', 'automation', 'workflow', 'plugin', 'extension', 'tool'];
+
+function isJunk(raw: RawAgentData): boolean {
+  const text = `${raw.name} ${raw.description}`.toLowerCase();
+  return JUNK_KEYWORDS.some((kw) => text.includes(kw.toLowerCase()));
+}
+
+function relevanceScore(raw: RawAgentData): number {
+  const text = `${raw.name} ${raw.description} ${(raw.topics || []).join(' ')}`.toLowerCase();
+  let score = 0;
+  for (const kw of POSITIVE_KEYWORDS) {
+    if (text.includes(kw)) score += 2;
+  }
+  if (raw.source.startsWith('awesome')) score += 3; // awesome lists are curated
+  if (raw.source === 'producthunt') score += 2;
+  if (raw.stars && raw.stars > 100) score += 1;
+  if (raw.stars && raw.stars > 1000) score += 2;
+  return score;
+}
+
+function dedupeAndRank(rawData: RawAgentData[]): RawAgentData[] {
+  const seen = new Map<string, RawAgentData>();
+  for (const item of rawData) {
+    const key = (item.sourceUrl || item.name).toLowerCase().trim();
+    if (!seen.has(key) && !isJunk(item)) {
+      seen.set(key, item);
+    }
+  }
+  const unique = Array.from(seen.values());
+  unique.sort((a, b) => relevanceScore(b) - relevanceScore(a));
+  return unique;
+}
+
 export async function runPipeline(options: PipelineOptions = {}): Promise<void> {
-  const { sources = ['github', 'web'], dryRun = false } = options;
+  const { sources = ['awesome', 'github', 'producthunt', 'aggregators', 'web'], dryRun = false } = options;
 
   const llm = new LLMEnricher();
   if (!llm.isAvailable()) {
@@ -23,54 +69,63 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<void> 
 
   const api = new HireAgentAPI();
 
-  // 1. Collect raw data
+  // 1. Collect raw data from multiple high-quality sources
   const rawData: RawAgentData[] = [];
 
+  if (sources.includes('awesome')) {
+    const awesome = await fetchAwesomeLists();
+    rawData.push(...awesome);
+  }
+
   if (sources.includes('github')) {
-    const githubResults = await searchGitHub({
-      query: options.githubQuery || 'AI agent OR MCP server',
-      perPage: Math.max(5, Math.floor(config.MAX_AGENTS_PER_RUN / 2)),
+    const github = await searchGitHubRepos({
+      query: 'topic:mcp-server OR topic:ai-agent OR topic:llm-agent',
+      perPage: 20,
     });
-    rawData.push(...githubResults);
+    rawData.push(...github);
+  }
+
+  if (sources.includes('producthunt')) {
+    const ph = await searchProductHunt('artificial-intelligence', 10);
+    rawData.push(...ph);
+  }
+
+  if (sources.includes('aggregators')) {
+    const agg = await fetchAggregators();
+    rawData.push(...agg);
   }
 
   if (sources.includes('web')) {
-    const webResults = await searchWeb({
-      query: options.webQuery || 'best AI agents 2024 2025',
-      maxResults: Math.max(5, Math.floor(config.MAX_AGENTS_PER_RUN / 2)),
-    });
-    rawData.push(...webResults);
+    const web = await searchWeb(5);
+    rawData.push(...web);
   }
 
   await closeBrowser();
 
-  // Deduplicate by sourceUrl or name
-  const seen = new Map<string, RawAgentData>();
-  for (const item of rawData) {
-    const key = item.sourceUrl || item.name.toLowerCase().trim();
-    if (!seen.has(key)) {
-      seen.set(key, item);
-    }
-  }
-  const uniqueRawData = Array.from(seen.values());
+  // 2. Deduplicate + filter junk + rank by relevance
+  const ranked = dedupeAndRank(rawData);
 
-  if (uniqueRawData.length === 0) {
-    console.log('⚠️ No raw data found. Exiting.');
+  // Only send top candidates to LLM to avoid timeouts
+  const LLM_BATCH_SIZE = Math.min(12, config.MAX_AGENTS_PER_RUN * 2);
+  const candidates = ranked.slice(0, LLM_BATCH_SIZE);
+
+  if (candidates.length === 0) {
+    console.log('⚠️ No relevant data found after filtering. Exiting.');
     return;
   }
 
-  console.log(`\n📦 Collected ${rawData.length} raw items, ${uniqueRawData.length} after dedup. Starting LLM enrichment...\n`);
+  console.log(`\n📦 Collected ${rawData.length} raw items, ${ranked.length} after dedup/filter.`);
+  console.log(`🎯 Sending top ${candidates.length} candidates to LLM enrichment...\n`);
 
-  // 2. Enrich with LLM
+  // 3. Enrich with LLM
   const enriched: EnrichedAgent[] = [];
-  for (let i = 0; i < uniqueRawData.length; i++) {
-    const raw = uniqueRawData[i];
-    console.log(`🧠 [${i + 1}/${rawData.length}] Enriching: ${raw.name}`);
+  for (let i = 0; i < candidates.length; i++) {
+    const raw = candidates[i];
+    console.log(`🧠 [${i + 1}/${candidates.length}] ${raw.source} | ${raw.name.slice(0, 60)}`);
     const result = await llm.enrich(raw);
     if (result) {
       enriched.push(result);
     }
-    // Small delay to avoid rate limits
     await sleep(500);
   }
 
@@ -86,12 +141,14 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<void> 
   if (dryRun) {
     console.log('\n🏃 DRY RUN — would import the following agents:');
     for (const agent of toImport) {
-      console.log(`  - ${agent.nameZh} (${agent.category})`);
+      console.log(`  - [${agent.category}] ${agent.nameZh}`);
+      console.log(`    Tags: ${agent.tags?.join(', ')}`);
+      console.log(`    Capabilities: ${agent.capabilities?.join(', ')}`);
     }
     return;
   }
 
-  // 3. Upload via API
+  // 4. Upload via API
   try {
     const result = await api.importAgents(toImport);
     console.log(`\n✅ Import complete: ${result.success} success, ${result.failed} failed`);

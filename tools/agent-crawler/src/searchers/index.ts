@@ -1,2 +1,5 @@
-export { searchGitHub, type GitHubSearchOptions } from './github.js';
-export { searchWeb, closeBrowser, type WebSearchOptions } from './web.js';
+export { fetchAwesomeLists } from './awesome-lists.js';
+export { searchGitHubRepos } from './github-api.js';
+export { searchProductHunt } from './producthunt.js';
+export { fetchAggregators } from './aggregators.js';
+export { searchWeb, closeBrowser } from './web-search.js';

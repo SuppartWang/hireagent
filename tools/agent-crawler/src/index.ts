@@ -7,20 +7,23 @@ function printHelp() {
 HireAgent Crawler — Automated agent discovery and ingestion
 
 Usage:
-  pnpm crawl [--dry-run] [--sources=github,web] [--github-query="..."] [--web-query="..."]
+  pnpm crawl [--dry-run] [--sources=...]
+
+Sources (comma-separated):
+  awesome      Parse awesome lists (awesome-mcp-servers, awesome-ai-agents)
+  github       Search GitHub repos for MCP servers / AI agents
+  producthunt  Crawl Product Hunt AI products
+  aggregators  Fetch AI tool aggregators
+  web          DuckDuckGo web search
+  all          All of the above (default)
 
 Options:
-  --dry-run          Preview without uploading
-  --sources          Comma-separated list: github,web (default: both)
-  --github-query     Custom GitHub search query
-  --web-query        Custom web search query
-  --help             Show this help
+  --dry-run    Preview without uploading
+  --help       Show this help
 
 Environment:
-  HIREAGENT_API_BASE_URL
-  HIREAGENT_ADMIN_EMAIL
-  HIREAGENT_ADMIN_PASSWORD
-  OPENAI_API_KEY
+  KIMI_API_KEY / OPENAI_API_KEY / OLLAMA
+  HIREAGENT_ADMIN_EMAIL / HIREAGENT_ADMIN_PASSWORD
 `);
 }
 
@@ -32,19 +35,15 @@ if (args.includes('--help') || args.includes('-h')) {
 const dryRun = args.includes('--dry-run');
 
 const sourcesArg = args.find((a) => a.startsWith('--sources='));
-const sources = sourcesArg
-  ? (sourcesArg.split('=')[1].split(',') as ('github' | 'web')[])
-  : undefined;
-
-const githubQueryArg = args.find((a) => a.startsWith('--github-query='));
-const githubQuery = githubQueryArg ? githubQueryArg.split('=')[1] : undefined;
-
-const webQueryArg = args.find((a) => a.startsWith('--web-query='));
-const webQuery = webQueryArg ? webQueryArg.split('=')[1] : undefined;
+let sources: string[] | undefined;
+if (sourcesArg) {
+  const val = sourcesArg.split('=')[1];
+  sources = val === 'all' ? ['awesome', 'github', 'producthunt', 'aggregators', 'web'] : val.split(',');
+}
 
 async function main() {
   const { runPipeline } = await import('./pipeline.js');
-  await runPipeline({ sources, githubQuery, webQuery, dryRun });
+  await runPipeline({ sources, dryRun });
 }
 
 main().catch((err) => {
