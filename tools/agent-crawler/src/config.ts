@@ -10,14 +10,14 @@ const configSchema = z.object({
   HIREAGENT_ADMIN_PASSWORD: z.string().default(''),
 
   OPENAI_API_KEY: z.string().optional(),
-  OPENAI_BASE_URL: z.string().url().optional(),
+  OPENAI_BASE_URL: z.string().optional(),
   OPENAI_MODEL: z.string().default('gpt-4o-mini'),
 
   KIMI_API_KEY: z.string().optional(),
-  KIMI_BASE_URL: z.string().url().default('https://api.moonshot.cn/v1'),
+  KIMI_BASE_URL: z.string().default('https://api.moonshot.cn/v1'),
   KIMI_MODEL: z.string().default('moonshot-v1-8k'),
 
-  OLLAMA_BASE_URL: z.string().url().default('http://localhost:11434/v1'),
+  OLLAMA_BASE_URL: z.string().default('http://localhost:11434/v1'),
   OLLAMA_MODEL: z.string().default('qwen2.5:7b'),
 
   LLM_PROVIDER: z.enum(['kimi', 'ollama', 'openai']).default('kimi'),
